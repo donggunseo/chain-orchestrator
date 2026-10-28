@@ -1,0 +1,44 @@
+{
+  "adaptation": [
+    "Clinical/Site/Safety copied from approved minimum profile; original files unchanged",
+    "Native contracts and fixed exact input fixtures replace legacy selector contracts",
+    "Site field bindings project only declared facts; full exact source document remains a separate viewing sidecar",
+    "Registration demographics stay initial facts and are not reapplied as external facts",
+    "NO_EVIDENCE and other unverified source states remain UNKNOWN after normalization",
+    "tPA fixture evidence is scoped structured data with missing information; no new clinical recommendation or PASS",
+    "v0.4 namespace relocation preserves source/fixture bytes and existing synthetic-only approval references; no production approval is issued",
+    "Published source changes are discovered through the shared polling/preparation backend client; the simulator sends no source Event to the engine"
+  ],
+  "agent_reference_outputs": {
+    "archive/v0.3/episodes/stroke_reference_001_v03/fixtures/cli/outputs/screen-negative.json": "sha256:f2c3dd9ffdbb09040076d4b80c1f867e9f8e0897e5aa4e1ed404ff64330ee3a0",
+    "archive/v0.3/episodes/stroke_reference_001_v03/fixtures/cli/outputs/screen-positive.json": "sha256:a40c61059b4931c0be9fcc134f05fe635ffe2c26c19fafa1ed4d0b44654717a9"
+  },
+  "fixtures_per_agent": {
+    "stroke-screening-agent": 6,
+    "tpa-decision-support-agent": 768
+  },
+  "initial_hash": "sha256:2130880fdcd721510a1a3dc2a6303fd4928af268a33a46f1d9e852e580b3bf2a",
+  "original_episode": "archive/v0.3/episodes/stroke_reference_001_v03",
+  "profiles": {
+    "negative": "Explicit retained negative test profile",
+    "positive": "Retained synthetic positive outcome"
+  },
+  "runtime_fallback": false,
+  "runtime_reads_generator": false,
+  "schema": "chain-fact-demo-provenance/v1",
+  "simulation_hash": "sha256:9f76472b99943ed34deab3fe8a1e89d08f42a682d86415a6cca104ae06d18ddd",
+  "source_hashes": {
+    "demo/episodes/stroke_reference_001/sources/emr/consult_note.json": "sha256:a69b8bbd7564cac4e6f6d89dfd23c65571db447e9be9286a5e234fc0b8aee6f5",
+    "demo/episodes/stroke_reference_001/sources/emr/initial_note.json": "sha256:140a09acd9899169a3118ea458a4c1173f3e8148bf88762313133f1eefbd2839",
+    "demo/episodes/stroke_reference_001/sources/emr/nihss.json": "sha256:1e6b9a2d5845dec8f1fadd9d178fc1d8286be0e53e8d705de4aa7e14a63181ec",
+    "demo/episodes/stroke_reference_001/sources/emr/registration.json": "sha256:00b08e7718db7f1c823d6485cc28304b1bc24020266f463e09fe5c16c70e724d",
+    "demo/episodes/stroke_reference_001/sources/lis/cbc.json": "sha256:0223568d2f900d22ef76b9a936ca49f018d7778a89a708a6f5231acb69851ad6",
+    "demo/episodes/stroke_reference_001/sources/lis/coag.json": "sha256:8e39ab318fe8900f672b891867889cffc48a8d21ac48f5ce3307735f0c95b7eb",
+    "demo/episodes/stroke_reference_001/sources/nursing/nursing_v1.json": "sha256:626986042ed1b9ea01eca764fb87219b3948c413c7f6d6b6ce1addf41b8610f9",
+    "demo/episodes/stroke_reference_001/sources/nursing/nursing_v2.json": "sha256:8aa3d1393208a1a3ca2ec6dbb891225900105990901c1c91280df49259b582fb",
+    "demo/episodes/stroke_reference_001/sources/ocs/ct_order.json": "sha256:3398fb2ff08ca2b8feafb56799d1e54af318513a439aecad4da8a58646c33fb0",
+    "demo/episodes/stroke_reference_001/sources/ris_pacs/ncct.json": "sha256:3bdcead2780a2045303ff97b9a5c7b87d2696af8b7ea800b4876c71e5c93551f"
+  },
+  "supported_source_subsets": 384,
+  "synthetic_only": true
+}

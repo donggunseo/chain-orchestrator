@@ -1,7 +1,0 @@
-{
-  "screening_result": "NEGATIVE",
-  "mock_only": true,
-  "basis": [
-    "EXPLICIT_SYNTHETIC_TEST"
-  ]
-}

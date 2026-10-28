@@ -1,0 +1,45 @@
+schema: chain-deployment/v1
+deployment_id: minimum-mock-draft
+version: 1.0-demo-stage8
+site_id: HYUMC_GURI
+agents:
+  stroke-screening-agent:
+    implementation_ref: fact-demo:agent:stroke-screening-agent
+    version: 1.0.0-fact-demo8
+    timeout_s: 30
+    backend:
+      kind: fixture
+      config_ref: demo/assets/agent-fixtures-positive.json
+  clinical-summary-agent:
+    implementation_ref: fact-demo:agent:clinical-summary-agent
+    version: 1.0.0-fact-demo8
+    timeout_s: 120
+    backend:
+      kind: structured
+  tpa-decision-support-agent:
+    implementation_ref: fact-demo:agent:tpa-decision-support-agent
+    version: 1.0.0-fact-demo8
+    timeout_s: 30
+    backend:
+      kind: fixture
+      config_ref: demo/assets/agent-fixtures-positive.json
+source_bindings:
+  source-emr: fact-demo:source:emr
+  source-nursing: fact-demo:source:nursing
+  source-ocs: fact-demo:source:ocs
+  source-lis: fact-demo:source:lis
+  source-ris: fact-demo:source:ris
+notifier_binding: fact-demo:notifier
+effect_binding: fact-demo:effects
+activity:
+  timeout_s: 120
+  maximum_attempts: 2
+preparation:
+  timeout_s: 180
+  maximum_attempts: 2
+  maximum_pages: 10
+  maximum_rounds: 2
+reconciliation:
+  on_startup: true
+  on_reconnect: true
+  poll_interval_s: 30

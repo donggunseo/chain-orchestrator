@@ -1,0 +1,8 @@
+{
+  "expected_schema": "chain-fact-demo-expected/v1",
+  "state_path": [
+    "S0",
+    "S0X"
+  ],
+  "terminal_state": "S0X"
+}

@@ -1,8 +1,0 @@
-{
-  "synthetic": true,
-  "preparation": "OFFLINE_MISSING_LAB_INPUTS",
-  "preserves": "All 33 stage-6 exact inputs; original directories immutable",
-  "additional_case": "No CBC/coag publication; matching NCCT permits S2_1; missing lab facts UNKNOWN/null",
-  "clinical_scope": "Evidence-only output files; no eligibility, dose, elapsed/window, NLP or fallback",
-  "runtime": "Prepared before Registry/Worker start; no dynamic answers"
-}

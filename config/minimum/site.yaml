@@ -1,0 +1,98 @@
+# Native synthetic demo. Clinical timer values are not accelerated here.
+schema: chain-site/v1
+site_id: HYUMC_GURI
+version: 1.0-demo-stage8
+sources:
+  emr:
+    system: ER_EMR
+    binding: source-emr
+  nursing:
+    system: NURSING_EMR
+    binding: source-nursing
+  ocs:
+    system: OCS
+    binding: source-ocs
+  lis:
+    system: LIS
+    binding: source-lis
+  ris:
+    system: RIS_PACS
+    binding: source-ris
+fact_bindings:
+  initial_note:
+  - source: emr
+    field: /raw/document
+    record_type: ED_INITIAL_NOTE
+  lkw:
+  - source: nursing
+    field: /facts/lkw
+  - source: emr
+    field: /facts/lkw
+  anticoagulant:
+  - source: nursing
+    field: /facts/anticoagulant
+  - source: emr
+    field: /facts/anticoagulant
+  ncct_completed:
+  - source: ris
+    field: /facts/ncct_completed
+  ncct_order_id:
+  - source: ris
+    field: /facts/ncct_order_id
+  ct_order_id:
+  - source: ocs
+    field: /facts/ct_order_id
+  platelet_count:
+  - source: lis
+    field: /facts/platelet_count
+  inr:
+  - source: lis
+    field: /facts/inr
+  weight_kg:
+  - source: nursing
+    field: /facts/weight_kg
+  - source: emr
+    field: /facts/weight_kg
+  nihss:
+  - source: nursing
+    field: /facts/nihss
+  - source: emr
+    field: /facts/nihss
+  sbp:
+  - source: nursing
+    field: /facts/sbp
+  - source: emr
+    field: /facts/sbp
+  dbp:
+  - source: nursing
+    field: /facts/dbp
+  - source: emr
+    field: /facts/dbp
+  glucose:
+  - source: nursing
+    field: /facts/glucose
+  - source: emr
+    field: /facts/glucose
+role_bindings:
+  EM_PHYSICIAN:
+  - EM_PHYSICIAN
+  NEUROLOGIST:
+  - NEUROLOGIST
+recipients:
+  CT_ROOM_BOARD:
+    channel: CONSOLE
+    address_ref: mock:CT_ROOM_BOARD
+  NURSE_STATION:
+    channel: CONSOLE
+    address_ref: mock:NURSE_STATION
+  SMS_GATEWAY:
+    channel: CONSOLE
+    address_ref: mock:SMS_GATEWAY
+  EHR_MESSENGER:
+    channel: CONSOLE
+    address_ref: mock:EHR_MESSENGER
+effect_targets:
+  EHR_PATIENT_LIST:
+    binding: fact-demo:effects
+  CHAIN_CONSOLE:
+    binding: fact-demo:effects

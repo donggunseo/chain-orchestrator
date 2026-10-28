@@ -1,0 +1,80 @@
+{
+  "agents": {
+    "clinical-summary-agent": {
+      "actions": [
+        "READ_DATA_API",
+        "RETURN_RESULT"
+      ],
+      "data_scopes": [
+        "context:read"
+      ],
+      "modes": {
+        "context": {
+          "output_fields": [
+            "structured_context",
+            "missing_information",
+            "cache"
+          ]
+        }
+      },
+      "request_contract": "chain-fact-agent-request/v1",
+      "requires_summary": false,
+      "result_contract": "chain-fact-agent-result/v1",
+      "version": "1.0.0-fact-demo8"
+    },
+    "stroke-screening-agent": {
+      "actions": [
+        "READ_DATA_API",
+        "RETURN_RESULT"
+      ],
+      "data_scopes": [
+        "context:read"
+      ],
+      "modes": {
+        "screening": {
+          "output_fields": [
+            "screening_result",
+            "mock_only",
+            "basis"
+          ]
+        }
+      },
+      "request_contract": "chain-fact-agent-request/v1",
+      "requires_summary": true,
+      "result_contract": "chain-fact-agent-result/v1",
+      "version": "1.0.0-fact-demo8"
+    },
+    "tpa-decision-support-agent": {
+      "actions": [
+        "READ_DATA_API",
+        "RETURN_RESULT"
+      ],
+      "data_scopes": [
+        "context:read"
+      ],
+      "modes": {
+        "final": {
+          "output_fields": [
+            "mode",
+            "evidence_package",
+            "assessment",
+            "mock_only"
+          ]
+        },
+        "interim": {
+          "output_fields": [
+            "mode",
+            "evidence_package",
+            "assessment",
+            "mock_only"
+          ]
+        }
+      },
+      "request_contract": "chain-fact-agent-request/v1",
+      "requires_summary": true,
+      "result_contract": "chain-fact-agent-result/v1",
+      "version": "1.0.0-fact-demo8"
+    }
+  },
+  "schema": "chain-module-metadata/v1"
+}

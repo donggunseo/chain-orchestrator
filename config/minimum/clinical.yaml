@@ -1,0 +1,1379 @@
+# Native synthetic demo. Clinical timer values are not accelerated here.
+schema: chain-clinical/v1
+spec_id: acute-stroke-minimum
+version: 1.0-demo-stage8
+profile: minimum-demo
+contract_version: chain-fact-execution/v1
+context_service:
+  agent: clinical-summary-agent
+  mode: context
+origin_refs:
+  legacy-flow:
+    path: archive/v0.3/config/workflow_v03.yaml
+    anchor: states / hitl_checkpoints
+    status: existing-approved
+  legacy-safety:
+    path: archive/v0.3/config/policy_v03.yaml
+    anchor: runtime
+    status: existing-approved
+  fact-principle:
+    path: clinical-workflow/clinical/acute-stroke/rules/common-rules.md
+    anchor: 기능은 사실에 붙는다
+    status: wg1-review
+facts:
+  site_id:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  patient_id:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  encounter_id:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  episode_id:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  age:
+    type: integer
+    source: initial
+    origin_refs:
+    - legacy-flow
+  sex:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  bed:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  arrival_time:
+    type: string
+    source: initial
+    origin_refs:
+    - legacy-flow
+  initial_note:
+    type: object
+    source: external
+    origin_refs:
+    - legacy-flow
+  lkw:
+    type: string
+    source: external
+    origin_refs:
+    - legacy-flow
+  anticoagulant:
+    type: string
+    source: external
+    origin_refs:
+    - legacy-flow
+  ncct_completed:
+    type: boolean
+    source: external
+    origin_refs:
+    - legacy-flow
+  ncct_order_id:
+    type: string
+    source: external
+    origin_refs:
+    - legacy-flow
+  ct_order_id:
+    type: string
+    source: external
+    origin_refs:
+    - legacy-flow
+  platelet_count:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  inr:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  weight_kg:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  nihss:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  sbp:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  dbp:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+  glucose:
+    type: number
+    source: external
+    origin_refs:
+    - legacy-flow
+contexts:
+  screening_input:
+    fields:
+    - initial_note
+    - lkw
+    - glucose
+    summary: true
+    origin_refs:
+    - legacy-flow
+  tpa_input:
+    fields:
+    - lkw
+    - ncct_completed
+    - ncct_order_id
+    - ct_order_id
+    - platelet_count
+    - inr
+    - anticoagulant
+    - weight_kg
+    - nihss
+    - sbp
+    - dbp
+    - glucose
+    - age
+    summary: true
+    origin_refs:
+    - legacy-flow
+  display_context:
+    fields:
+    - episode_id
+    - ct_order_id
+    - ncct_completed
+    summary: false
+    origin_refs:
+    - legacy-flow
+  hitl1_evidence:
+    fields:
+    - initial_note
+    - lkw
+    - glucose
+    summary: true
+    origin_refs:
+    - legacy-flow
+  hitl2_evidence:
+    fields:
+    - lkw
+    - ncct_completed
+    - ncct_order_id
+    - ct_order_id
+    - platelet_count
+    - inr
+    - anticoagulant
+    - weight_kg
+    - nihss
+    - sbp
+    - dbp
+    - glucose
+    - age
+    summary: true
+    origin_refs:
+    - legacy-flow
+milestones:
+  opening_screening_result:
+    capture_first:
+      ref: results.screening.screening_result
+    type: string
+    origin_refs:
+    - legacy-flow
+  ncct_matched:
+    when: &id002
+      all:
+      - eq:
+        - ref: facts.ncct_completed
+        - literal: true
+      - requirement: NCCT_ORDER_MATCH
+    origin_refs:
+    - legacy-flow
+    - legacy-safety
+states:
+  S0:
+    State:
+      name: ED_REGISTERED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 급성 뇌졸중 평가 필요성을 Screening으로 확인한다. 진단 확정을 뜻하지 않는다.
+      start: 알려진 초기 입력으로 Episode를 시작한다.
+      end: 초진기록 공개 후 수락된 Screening 결과로 양성/음성 분기한다.
+    Entry Trigger:
+      projection_rule_refs: []
+      description: Episode 생성의 fallback
+    Incoming Data / Evidence:
+      context_refs:
+      - screening_input
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement:
+    - fact: initial_note
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: lkw
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: glucose
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    Required Capability:
+      task_refs:
+      - screening
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs: []
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S1:
+    State:
+      name: ACUTE_STROKE_SUSPECTED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 수락된 Screening과 고정된 근거를 표시해 의료진의 CT 경로 결정을 돕는다.
+      start: Screening POSITIVE로 진입한다.
+      end: 'HITL #1의 CT 진행/경로 종료 결정 또는 보류.'
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S1
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs:
+      - screening_input
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement:
+    - fact: initial_note
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: lkw
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: glucose
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    Required Capability:
+      task_refs:
+      - hitl1
+      - effect_SET_FLAG
+      - effect_SET_DASHBOARD
+      - notify_CT_ROOM_PREALERT_L1
+      - notify_NURSE_S1_PREP
+      - notify_NEURO_ONCALL_S1
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs:
+      - H1_OVERDUE
+      - H1_DEFER
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S2:
+    State:
+      name: STROKE_CT_CONFIRMED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: CT 촬영을 기다리며 새 근거에 따라 tPA interim 의사결정지원을 반복한다.
+      start: '의료진이 HITL #1에서 CT 진행을 결정한다.'
+      end: 해당 오더의 뇌 NCCT 완료 Event로 S2_1에 진입한다.
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S2
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs:
+      - tpa_input
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement:
+    - fact: lkw
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: anticoagulant
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: platelet_count
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: inr
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ct_order_id
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ncct_completed
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ncct_order_id
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: weight_kg
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: nihss
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: sbp
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: dbp
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: glucose
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: age
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    Required Capability:
+      task_refs:
+      - tpa_interim
+      - notify_CT_ROOM_CONFIRMED_L2
+      - notify_NEURO_ONCALL_S2
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs:
+      - CT_OVERDUE
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S2_1:
+    State:
+      name: CT_COMPLETED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 수락된 tPA final 결과와 고정된 근거로 의료진의 IV thrombolysis 계획 결정을 요청한다.
+      start: 해당 CT 오더의 뇌 NCCT 촬영 완료.
+      end: 'HITL #2에서 시행 계획/비시행을 결정하거나 보류한다.'
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S2_1
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs:
+      - tpa_input
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement:
+    - fact: lkw
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: anticoagulant
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: platelet_count
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: inr
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ct_order_id
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ncct_completed
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: ncct_order_id
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: weight_kg
+      requirement: MANDATORY
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: nihss
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: sbp
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: dbp
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: glucose
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    - fact: age
+      requirement: OPTIONAL
+      description: 현재 확보된 자료의 표시 요건. 누락을 전이 Gate로 자동 적용하지 않는다.
+    Required Capability:
+      task_refs:
+      - tpa_final
+      - hitl2
+      - notify_NEURO_ONCALL_CT_DONE
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs:
+      - H2_OVERDUE
+      - H2_DEFER
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs:
+      - CT_PATH_APPROVED
+      - NCCT_ORDER_MATCH
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S3:
+    State:
+      name: THROMBOLYSIS_PLANNED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 의료진의 IV thrombolysis 시행 계획을 Mock 알림으로 기록하고 경로를 종료한다.
+      start: 'HITL #2에서 THROMBOLYSIS_YES를 수락한다.'
+      end: 진행 중 작업을 처리한 뒤 Workflow를 종료한다.
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S3
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs: []
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement: []
+    Required Capability:
+      task_refs:
+      - notify_NURSE_S3_THROMBOLYSIS_PLANNED
+      - notify_EM_S3_THROMBOLYSIS_PLANNED
+      - notify_NEURO_S3_CONFIRM
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs: []
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S3N:
+    State:
+      name: THROMBOLYSIS_NOT_PLANNED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 의료진의 IV thrombolysis 비시행 결정을 감사 기록에 남기고 경로를 종료한다.
+      start: 'HITL #2에서 THROMBOLYSIS_NO를 수락한다.'
+      end: 감사 기록과 진행 중 작업 처리 후 Workflow 종료.
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S3N
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs: []
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement: []
+    Required Capability:
+      task_refs: []
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs: []
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S1X:
+    State:
+      name: NOT_STROKE_PATHWAY
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 의료진 판단으로 뇌졸중 경로를 종료하고 Mock 표시 해제 및 사전알림 취소 안내를 기록한다.
+      start: 'HITL #1에서 NOT_STROKE_PATHWAY를 수락한다.'
+      end: Mock 효과·취소 알림 기록과 감사 봉인 요청 후 경로 종료.
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S1X
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs: []
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement: []
+    Required Capability:
+      task_refs:
+      - effect_CLEAR_FLAG
+      - effect_CLEAR_DASHBOARD
+      - notify_CT_ROOM_PREALERT_CANCELLED
+      - notify_NURSE_S1_PREP_CANCELLED
+      - notify_NEURO_ONCALL_S1_CANCELLED
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs: []
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+  S0X:
+    State:
+      name: SCREEN_NEGATIVE_CLOSED
+      clinical_ids: []
+    Clinical Goal and Scope:
+      goal: 선별 음성 결과를 감사 기록에 남기고 조용히 경로를 종료한다. 뇌졸중 배제를 뜻하지 않는다.
+      start: Screening NEGATIVE를 수락한다.
+      end: 감사 기록과 진행 중 작업 처리 후 Workflow 종료.
+    Entry Trigger:
+      projection_rule_refs:
+      - to_S0X
+      description: 공유 사실·안전 요건의 State 투영 결과
+    Incoming Data / Evidence:
+      context_refs: []
+      description: 현재 확보한 자료. 원문·이전 근거 개정은 별도로 보존한다.
+    Data requirement: []
+    Required Capability:
+      task_refs: []
+    Agent Input:
+      derive: true
+    Expected Agent Output:
+      derive: true
+    HITL:
+      derive: true
+    Guard / Transition condition:
+      derive: true
+    Next State / Branch:
+      derive: true
+    Timer / Exception / Fail-safe:
+      timer_refs: []
+      notes:
+      - 표시 명세이며 추가 임상 Gate가 아니다.
+    Safety / Audit:
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+      - legacy-safety
+state_projection:
+  fallback: S0
+  rules:
+    to_S0X:
+      state: S0X
+      priority: 10
+      when: &id006
+        eq:
+        - ref: milestones.opening_screening_result
+        - literal: NEGATIVE
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+    to_S1:
+      state: S1
+      priority: 20
+      when: &id003
+        eq:
+        - ref: milestones.opening_screening_result
+        - literal: POSITIVE
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+    to_S1X:
+      state: S1X
+      priority: 30
+      when:
+        eq:
+        - ref: decisions.H1.value
+        - literal: NOT_STROKE_PATHWAY
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+    to_S2:
+      state: S2
+      priority: 40
+      when: &id001
+        eq:
+        - ref: decisions.H1.value
+        - literal: PROCEED_TO_CT
+      requirement_refs:
+      - CT_PATH_APPROVED
+      origin_refs:
+      - legacy-flow
+    to_S2_1:
+      state: S2_1
+      priority: 50
+      when:
+        eq:
+        - ref: facts.ncct_completed
+        - literal: true
+      requirement_refs:
+      - CT_PATH_APPROVED
+      - NCCT_ORDER_MATCH
+      origin_refs:
+      - legacy-flow
+    to_S3N:
+      state: S3N
+      priority: 60
+      when:
+        eq:
+        - ref: decisions.H2.value
+        - literal: THROMBOLYSIS_NO
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+    to_S3:
+      state: S3
+      priority: 70
+      when:
+        eq:
+        - ref: decisions.H2.value
+        - literal: THROMBOLYSIS_YES
+      requirement_refs: []
+      origin_refs:
+      - legacy-flow
+tasks:
+  screening:
+    kind: agent
+    identity:
+      subject: episode
+      repeat: input_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    agent: stroke-screening-agent
+    mode: screening
+    context: screening_input
+  tpa_interim:
+    kind: agent
+    identity:
+      subject: episode
+      repeat: input_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    agent: tpa-decision-support-agent
+    mode: interim
+    context: tpa_input
+  tpa_final:
+    kind: agent
+    identity:
+      subject: episode
+      repeat: input_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    agent: tpa-decision-support-agent
+    mode: final
+    context: tpa_input
+  hitl1:
+    kind: hitl
+    identity:
+      subject: episode
+      repeat: once
+    after:
+    - screening
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    decision: H1
+  hitl2:
+    kind: hitl
+    identity:
+      subject: episode
+      repeat: once
+    after:
+    - tpa_final
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    decision: H2
+  effect_SET_FLAG:
+    kind: effect
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    operation: SET_FLAG
+    resource: CHAIN_S1
+    target: EHR_PATIENT_LIST
+    context: display_context
+  effect_SET_DASHBOARD:
+    kind: effect
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    operation: SET_DASHBOARD
+    resource: CHAIN_DASHBOARD
+    target: CHAIN_CONSOLE
+    context: display_context
+  notify_CT_ROOM_PREALERT_L1:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: CT_ROOM_PREALERT_L1
+    recipient: CT_ROOM_BOARD
+    context: display_context
+  notify_NURSE_S1_PREP:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: NURSE_S1_PREP
+    recipient: NURSE_STATION
+    context: display_context
+  notify_NEURO_ONCALL_S1:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: NEURO_ONCALL_S1
+    recipient: SMS_GATEWAY
+    context: display_context
+  notify_CT_ROOM_CONFIRMED_L2:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: CT_ROOM_CONFIRMED_L2
+    recipient: CT_ROOM_BOARD
+    context: display_context
+  notify_NEURO_ONCALL_S2:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: NEURO_ONCALL_S2
+    recipient: SMS_GATEWAY
+    context: display_context
+  notify_NEURO_ONCALL_CT_DONE:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: NEURO_ONCALL_CT_DONE
+    recipient: SMS_GATEWAY
+    context: display_context
+  notify_NURSE_S3_THROMBOLYSIS_PLANNED:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: NURSE_S3_THROMBOLYSIS_PLANNED
+    recipient: NURSE_STATION
+    context: display_context
+  notify_EM_S3_THROMBOLYSIS_PLANNED:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: EM_S3_THROMBOLYSIS_PLANNED
+    recipient: EHR_MESSENGER
+    context: display_context
+  notify_NEURO_S3_CONFIRM:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: NEURO_S3_CONFIRM
+    recipient: SMS_GATEWAY
+    context: display_context
+  effect_CLEAR_FLAG:
+    kind: effect
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    operation: CLEAR_FLAG
+    resource: CHAIN_S1
+    target: EHR_PATIENT_LIST
+    context: display_context
+  effect_CLEAR_DASHBOARD:
+    kind: effect
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    operation: CLEAR_DASHBOARD
+    resource: CHAIN_DASHBOARD
+    target: CHAIN_CONSOLE
+    context: display_context
+  notify_CT_ROOM_PREALERT_CANCELLED:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: CT_ROOM_PREALERT_CANCELLED
+    recipient: CT_ROOM_BOARD
+    context: display_context
+  notify_NURSE_S1_PREP_CANCELLED:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: NURSE_S1_PREP_CANCELLED
+    recipient: NURSE_STATION
+    context: display_context
+  notify_NEURO_ONCALL_S1_CANCELLED:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: once
+    after: []
+    completion_effect: true
+    origin_refs:
+    - legacy-flow
+    template: NEURO_ONCALL_S1_CANCELLED
+    recipient: SMS_GATEWAY
+    context: display_context
+  notice_h1_overdue:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: cause_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: HITL1_OVERDUE
+    recipient: NURSE_STATION
+    context: display_context
+  notice_ct_overdue:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: cause_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: CT_OVERDUE
+    recipient: NURSE_STATION
+    context: display_context
+  notice_h2_overdue:
+    kind: notify
+    identity:
+      subject: episode
+      repeat: cause_change
+    after: []
+    completion_effect: false
+    origin_refs:
+    - legacy-flow
+    template: HITL2_OVERDUE
+    recipient: SMS_GATEWAY
+    context: display_context
+work_rules:
+  screening:
+    task: screening
+    when:
+      is_known:
+        ref: facts.initial_note
+    stop_when:
+      any:
+      - eq:
+        - ref: decisions.H1.value
+        - literal: PROCEED_TO_CT
+      - eq:
+        - ref: decisions.H1.value
+        - literal: NOT_STROKE_PATHWAY
+    origin_refs:
+    - legacy-flow
+  tpa_interim:
+    task: tpa_interim
+    when: *id001
+    stop_when:
+      all:
+      - eq:
+        - ref: facts.ncct_completed
+        - literal: true
+      - requirement: NCCT_ORDER_MATCH
+    origin_refs:
+    - legacy-flow
+  tpa_final:
+    task: tpa_final
+    when:
+      all:
+      - *id001
+      - *id002
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  hitl1:
+    task: hitl1
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  hitl2:
+    task: hitl2
+    when:
+      all:
+      - *id001
+      - *id002
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  effect_SET_FLAG:
+    task: effect_SET_FLAG
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  effect_SET_DASHBOARD:
+    task: effect_SET_DASHBOARD
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_CT_ROOM_PREALERT_L1:
+    task: notify_CT_ROOM_PREALERT_L1
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NURSE_S1_PREP:
+    task: notify_NURSE_S1_PREP
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NEURO_ONCALL_S1:
+    task: notify_NEURO_ONCALL_S1
+    when: *id003
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_CT_ROOM_CONFIRMED_L2:
+    task: notify_CT_ROOM_CONFIRMED_L2
+    when: *id001
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NEURO_ONCALL_S2:
+    task: notify_NEURO_ONCALL_S2
+    when: *id001
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NEURO_ONCALL_CT_DONE:
+    task: notify_NEURO_ONCALL_CT_DONE
+    when:
+      all:
+      - *id001
+      - *id002
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NURSE_S3_THROMBOLYSIS_PLANNED:
+    task: notify_NURSE_S3_THROMBOLYSIS_PLANNED
+    when: &id004
+      eq:
+      - ref: decisions.H2.value
+      - literal: THROMBOLYSIS_YES
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_EM_S3_THROMBOLYSIS_PLANNED:
+    task: notify_EM_S3_THROMBOLYSIS_PLANNED
+    when: *id004
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NEURO_S3_CONFIRM:
+    task: notify_NEURO_S3_CONFIRM
+    when: *id004
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  effect_CLEAR_FLAG:
+    task: effect_CLEAR_FLAG
+    when: &id005
+      eq:
+      - ref: decisions.H1.value
+      - literal: NOT_STROKE_PATHWAY
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  effect_CLEAR_DASHBOARD:
+    task: effect_CLEAR_DASHBOARD
+    when: *id005
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_CT_ROOM_PREALERT_CANCELLED:
+    task: notify_CT_ROOM_PREALERT_CANCELLED
+    when: *id005
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NURSE_S1_PREP_CANCELLED:
+    task: notify_NURSE_S1_PREP_CANCELLED
+    when: *id005
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+  notify_NEURO_ONCALL_S1_CANCELLED:
+    task: notify_NEURO_ONCALL_S1_CANCELLED
+    when: *id005
+    stop_when:
+      eq:
+      - literal: false
+      - literal: true
+    origin_refs:
+    - legacy-flow
+decisions:
+  H1:
+    question: 급성 뇌졸중 의심(S1). 응급 Stroke CT를 진행하시겠습니까?
+    options:
+      PROCEED_TO_CT:
+        effect: commit
+      NOT_STROKE_PATHWAY:
+        effect: commit
+      DEFER:
+        effect: defer
+        resume_timer: H1_DEFER
+    evidence_context: hitl1_evidence
+    requirement_ref: H1_ROLE
+    origin_refs:
+    - legacy-flow
+  H2:
+    question: 현재 제시된 tPA/TNK 근거묶음을 확인하고 IV thrombolysis 시행 여부를 결정해 주십시오.
+    options:
+      THROMBOLYSIS_YES:
+        effect: commit
+      THROMBOLYSIS_NO:
+        effect: commit
+      HOLD:
+        effect: defer
+        resume_timer: H2_DEFER
+    evidence_context: hitl2_evidence
+    requirement_ref: H2_ROLE
+    origin_refs:
+    - legacy-flow
+timers:
+  H1_OVERDUE:
+    owner:
+      kind: state
+      id: S1
+    anchor: state_entered
+    after:
+      value: 20
+      unit: min
+    on_expire:
+      kind: task
+      id: notice_h1_overdue
+    cancel_when:
+      any:
+      - eq:
+        - ref: decisions.H1.value
+        - literal: PROCEED_TO_CT
+      - eq:
+        - ref: decisions.H1.value
+        - literal: NOT_STROKE_PATHWAY
+    reset_on: new_owner_generation
+    repeat:
+      max_firings: 1
+    origin_refs:
+    - legacy-flow
+  CT_OVERDUE:
+    owner:
+      kind: state
+      id: S2
+    anchor: state_entered
+    after:
+      value: 30
+      unit: min
+    on_expire:
+      kind: task
+      id: notice_ct_overdue
+    cancel_when: *id002
+    reset_on: new_owner_generation
+    repeat:
+      max_firings: 1
+    origin_refs:
+    - legacy-flow
+  H2_OVERDUE:
+    owner:
+      kind: state
+      id: S2_1
+    anchor: state_entered
+    after:
+      value: 10
+      unit: min
+    on_expire:
+      kind: task
+      id: notice_h2_overdue
+    cancel_when:
+      any:
+      - eq:
+        - ref: decisions.H2.value
+        - literal: THROMBOLYSIS_YES
+      - eq:
+        - ref: decisions.H2.value
+        - literal: THROMBOLYSIS_NO
+    reset_on: new_owner_generation
+    repeat:
+      max_firings: 1
+    origin_refs:
+    - legacy-flow
+  H1_DEFER:
+    owner:
+      kind: decision
+      id: H1
+    anchor: decision_deferred
+    after:
+      value: 10
+      unit: min
+    on_expire:
+      kind: resume_decision
+      id: H1
+    cancel_when:
+      not:
+        eq:
+        - ref: decisions.H1.value
+        - literal: DEFER
+    reset_on: new_owner_generation
+    repeat:
+      max_firings: 1
+    origin_refs:
+    - legacy-flow
+  H2_DEFER:
+    owner:
+      kind: decision
+      id: H2
+    anchor: decision_deferred
+    after:
+      value: 10
+      unit: min
+    on_expire:
+      kind: resume_decision
+      id: H2
+    cancel_when:
+      not:
+        eq:
+        - ref: decisions.H2.value
+        - literal: HOLD
+    reset_on: new_owner_generation
+    repeat:
+      max_firings: 1
+    origin_refs:
+    - legacy-flow
+lifecycle:
+  initial: ACTIVE
+  states:
+  - ACTIVE
+  - COMPLETED
+  projection:
+    fallback: ACTIVE
+    rules:
+      finish_minimum:
+        state: COMPLETED
+        priority: 10
+        when:
+          any:
+          - *id006
+          - eq:
+            - ref: decisions.H1.value
+            - literal: NOT_STROKE_PATHWAY
+          - eq:
+            - ref: decisions.H2.value
+            - literal: THROMBOLYSIS_YES
+          - eq:
+            - ref: decisions.H2.value
+            - literal: THROMBOLYSIS_NO
+        requirement_refs: []
+        origin_refs:
+        - legacy-flow
+  completion:
+    state: COMPLETED
+    wait_for: owned_work
+    after_completion: reject
+  origin_refs:
+  - legacy-flow

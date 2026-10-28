@@ -1,24 +1,14 @@
-"""External Mock hospital: actual observations activate source publications.
-
-Source templates open only when their causal node occurs. An order is a virtual
-clinician's action here, never an engine/notifier effect. Standard Events alone
-cross the transport boundary. Expected paths and Agent fixtures are not read.
-"""
+"""Causal synthetic source release base; native observation is provided by FactHospital."""
 import asyncio
 import copy
-from datetime import timedelta
 import hashlib
 import json
 from pathlib import Path
-
-from chain_demo.adapters import EMRAdapter, NursingAdapter, OCSAdapter, LISAdapter, RISPACSAdapter, ManualAdapter
-from chain_demo.adapters.ingress import SourceIngress
-from chain_demo.data_io import read_json
-from chain_demo.source_contracts import identity
-from chain_demo.validation import canonical_hash, timestamp
+from demo.io import read_json
+from chain.common.source_contracts import identity
+from chain.common.validation import canonical_hash, timestamp
 from .rebinding import rebind_record
 from .scheduler import CausalScheduler, load_plan
-
 
 class HospitalSimulator:
     def __init__(self,episode,staging,store,clock,emit,*,plan_path=None):
@@ -44,31 +34,6 @@ class HospitalSimulator:
         for task in self.tasks:task.cancel()
         await asyncio.gather(*self.tasks,return_exceptions=True);self.tasks=[]
 
-    async def start(self,initial):
-        if self.started:raise RuntimeError("Hospital already started")
-        if identity(initial)!=self.store.identity:raise ValueError("Hospital patient/episode mismatch")
-        self.ingress=SourceIngress(initial,self.store)
-        self.arrival_shift=timestamp(initial["arrival_time"])-timestamp(self.reference_arrival)
-        self.started=True
-        await self.scheduler.mark("ARRIVAL",initial["arrival_time"])
-
-    async def observe(self,snapshot):
-        if snapshot.get("episode_id")!=self.store.identity["episode_id"]:raise ValueError("Observed different episode")
-        for item in snapshot.get("audit",[]):
-            if item["type"]!="STATE_ENTERED":continue
-            anchor=self.plan["observations"]["states"].get(item["state"])
-            if anchor and anchor not in self.scheduler.anchors:
-                await self.scheduler.mark(anchor,item["time"],{"state":item["state"]})
-        history=snapshot.get("hitl_history",{})
-        for event in snapshot.get("audit",[]):
-            if event["type"]!="HITL_DECISION_RECORDED":continue
-            record=history.get(event.get("request_id"),{})
-            if record.get("status")!="DECIDED":continue
-            checkpoint=record["request"]["checkpoint"]
-            for rule in self.plan["observations"]["decisions"]:
-                if checkpoint==rule["checkpoint"] and event["decision"]==rule["decision"] and rule["anchor"] not in self.scheduler.anchors:
-                    await self.scheduler.mark(rule["anchor"],event["time"],{"request_id":event["request_id"]})
-
     async def watch(self,query,*,poll_interval=.05):
         if poll_interval<=0:raise ValueError("Poll interval must be positive")
         while True:
@@ -89,18 +54,3 @@ class HospitalSimulator:
         self.tasks.append(asyncio.create_task(self._publish(node,record,at)))
         return {"source_ref":copy.deepcopy(record["source_ref"]),
                 **({"order_id":record["payload"]["order_id"]} if "order_id" in record["payload"] else {})}
-
-    async def _publish(self,node,record,occurred):
-        try:
-            due=(timestamp(occurred)+timedelta(seconds=self.plan["publication_delay"]["offset_s"])).isoformat()
-            await self.clock.sleep_until(due)
-            classes={"ER_EMR":EMRAdapter,"NURSING_EMR":NursingAdapter,"OCS":OCSAdapter,
-                     "LIS":LISAdapter,"RIS_PACS":RISPACSAdapter,"MANUAL_INPUT":ManualAdapter}
-            adapter=classes[record["source_ref"]["system"]](self.staging,self.store)
-            event=adapter.publish(node["id"]+".json",not_before=due,at=self.clock.now(),
-                                  event_id=self.store.identity["episode_id"]+":SIM:"+node["id"])
-            event=self.ingress.receive(event,received_at=self.clock.now())
-            await self.emit(copy.deepcopy(event))
-            self.publications.append({"id":node["id"],"actor":node.get("actor","MOCK_SOURCE"),"event":event})
-        except asyncio.CancelledError:raise
-        except Exception as exc:self.failures.append({"id":node["id"],"error":f"{type(exc).__name__}: {exc}"})

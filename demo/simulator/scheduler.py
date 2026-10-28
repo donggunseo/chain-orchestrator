@@ -6,8 +6,8 @@ from pathlib import Path
 import re
 from datetime import date
 
-from chain_demo.config import _read_yaml
-from chain_demo.validation import canonical_hash, fields, json_value, strings, text, timestamp
+from demo.io import read_yaml as _read_yaml
+from chain.common.validation import canonical_hash, fields, json_value, strings, text, timestamp
 
 
 def _seconds(value):

@@ -1,0 +1,135 @@
+# Native synthetic demo. Clinical timer values are not accelerated here.
+schema: chain-safety/v1
+policy_id: stroke-minimum-safety
+version: 1.0-demo-stage8
+purpose: synthetic-draft
+requirements:
+  CT_PATH_APPROVED:
+    kind: predicate
+    when:
+      eq:
+      - ref: decisions.H1.value
+      - literal: PROCEED_TO_CT
+    origin_refs:
+    - legacy-safety
+  NCCT_ORDER_MATCH:
+    kind: predicate
+    when:
+      eq:
+      - ref: facts.ncct_order_id
+      - ref: facts.ct_order_id
+    origin_refs:
+    - legacy-safety
+  H1_ROLE:
+    kind: hitl
+    roles:
+    - EM_PHYSICIAN
+    - NEUROLOGIST
+    confirmations: {}
+    origin_refs:
+    - legacy-safety
+  H2_ROLE:
+    kind: hitl
+    roles:
+    - NEUROLOGIST
+    confirmations:
+      THROMBOLYSIS_YES:
+      - NCCT_NO_HEMORRHAGE_PHYSICIAN_READ
+      - LKW_RECONFIRMED_WITH_FAMILY
+      - BP_RECHECK_BELOW_185_110
+      - NO_ANTICOAGULANT_RECONFIRMED
+    origin_refs:
+    - legacy-safety
+agent_approvals:
+  stroke-screening-agent:
+    versions:
+    - 1.0.0-fact-demo8
+    actions: &id001
+    - READ_DATA_API
+    - RETURN_RESULT
+    data_scopes:
+    - context:read
+  clinical-summary-agent:
+    versions:
+    - 1.0.0-fact-demo8
+    actions: *id001
+    data_scopes:
+    - context:read
+    - document:read
+    - observation:read
+    - lab:read
+    - imaging_status:read
+  tpa-decision-support-agent:
+    versions:
+    - 1.0.0-fact-demo8
+    actions: *id001
+    data_scopes:
+    - context:read
+query_approvals:
+  emr:
+    fields:
+    - initial_note
+    - lkw
+    - anticoagulant
+    - weight_kg
+    - nihss
+    - sbp
+    - dbp
+    - glucose
+    data_scopes:
+    - source:read
+  nursing:
+    fields:
+    - lkw
+    - anticoagulant
+    - weight_kg
+    - nihss
+    - sbp
+    - dbp
+    - glucose
+    data_scopes:
+    - source:read
+  ocs:
+    fields:
+    - ct_order_id
+    data_scopes:
+    - source:read
+  lis:
+    fields:
+    - platelet_count
+    - inr
+    data_scopes:
+    - source:read
+  ris:
+    fields:
+    - ncct_completed
+    - ncct_order_id
+    data_scopes:
+    - source:read
+forbidden_actions:
+- ORDER_PLACE
+- MEDICATION_ORDER
+- EMR_WRITE
+- NOTIFY_DIRECT
+- EXTERNAL_EGRESS
+notification_templates:
+- CT_ROOM_PREALERT_L1
+- NURSE_S1_PREP
+- NEURO_ONCALL_S1
+- CT_ROOM_PREALERT_CANCELLED
+- NURSE_S1_PREP_CANCELLED
+- NEURO_ONCALL_S1_CANCELLED
+- HITL1_OVERDUE
+- CT_ROOM_CONFIRMED_L2
+- NEURO_ONCALL_S2
+- CT_OVERDUE
+- NEURO_ONCALL_CT_DONE
+- HITL2_OVERDUE
+- NURSE_S3_THROMBOLYSIS_PLANNED
+- EM_S3_THROMBOLYSIS_PLANNED
+- NEURO_S3_CONFIRM
+allowed_effect_operations:
+- SET_FLAG
+- CLEAR_FLAG
+- SET_DASHBOARD
+- CLEAR_DASHBOARD

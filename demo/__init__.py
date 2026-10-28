@@ -1,1 +1,1 @@
-"""Client-owned synthetic demonstration, outside the CHAIN orchestrator package."""
+"""Synthetic demonstration of the versioned fact-based CHAIN engine."""

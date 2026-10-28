@@ -2,7 +2,7 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from chain_demo.validation import timestamp
+from chain.common.validation import timestamp
 
 
 class RealClock:

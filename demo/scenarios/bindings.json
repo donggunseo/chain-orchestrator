@@ -1,0 +1,4 @@
+{
+  "decisions": {"HITL_1_PROCEED_TO_CT": "H1", "HITL_2_THROMBOLYSIS": "H2"},
+  "results": {"tpa_decision_support.interim": "tpa_interim"}
+}

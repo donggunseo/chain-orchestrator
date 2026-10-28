@@ -1,0 +1,2274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CHAIN fact authoring v1 — phase-1 draft; not runtime support",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/clinical"
+    },
+    {
+      "$ref": "#/$defs/site"
+    },
+    {
+      "$ref": "#/$defs/safety"
+    },
+    {
+      "$ref": "#/$defs/deployment"
+    },
+    {
+      "$ref": "#/$defs/metadata"
+    }
+  ],
+  "$defs": {
+    "operand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string",
+              "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+            }
+          },
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "literal": {
+              "anyOf": [
+                {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "minItems": 0,
+                  "uniqueItems": true
+                }
+              ]
+            }
+          },
+          "required": [
+            "literal"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "expression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "any": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expression"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/expression"
+            }
+          },
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "eq": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/operand"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "eq"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ne": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/operand"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "ne"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "gte": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/operand"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "gte"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "in": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/operand"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "in"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "is_known": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                }
+              },
+              "required": [
+                "ref"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "is_known"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "has_status": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                },
+                "status": {
+                  "enum": [
+                    "KNOWN",
+                    "ABSENT_CONFIRMED",
+                    "UNKNOWN",
+                    "PENDING",
+                    "CONFLICT",
+                    "ERROR",
+                    "RETRACTED",
+                    "INVALIDATED"
+                  ]
+                }
+              },
+              "required": [
+                "ref",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "has_status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "requirement": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "requirement"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "duration": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "unit": {
+          "enum": [
+            "s",
+            "min",
+            "h"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "existing-approved",
+            "wg1-review",
+            "synthetic-test"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "anchor",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "object"
+          ]
+        },
+        "source": {
+          "enum": [
+            "initial",
+            "external"
+          ]
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "type",
+        "source",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "summary": {
+          "type": "boolean"
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "fields",
+        "summary",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "milestone": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "when": {
+              "$ref": "#/$defs/expression"
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "when",
+            "origin_refs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "capture_first": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "pattern": "^results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*$"
+                }
+              },
+              "required": [
+                "ref"
+              ],
+              "additionalProperties": false
+            },
+            "type": {
+              "enum": [
+                "string",
+                "number",
+                "integer",
+                "boolean"
+              ]
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "capture_first",
+            "type",
+            "origin_refs"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "projection_rule": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        },
+        "requirement_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "state",
+        "priority",
+        "when",
+        "requirement_refs",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "projection": {
+      "type": "object",
+      "properties": {
+        "fallback": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rules": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/projection_rule"
+          },
+          "minProperties": 1
+        }
+      },
+      "required": [
+        "fallback",
+        "rules"
+      ],
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "clinical_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "name",
+            "clinical_ids"
+          ],
+          "additionalProperties": false
+        },
+        "Clinical Goal and Scope": {
+          "type": "object",
+          "properties": {
+            "goal": {
+              "type": "string",
+              "minLength": 1
+            },
+            "start": {
+              "type": "string",
+              "minLength": 1
+            },
+            "end": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "goal",
+            "start",
+            "end"
+          ],
+          "additionalProperties": false
+        },
+        "Entry Trigger": {
+          "type": "object",
+          "properties": {
+            "projection_rule_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "projection_rule_refs",
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        "Incoming Data / Evidence": {
+          "type": "object",
+          "properties": {
+            "context_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "context_refs",
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        "Data requirement": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requirement": {
+                "enum": [
+                  "MANDATORY",
+                  "OPTIONAL",
+                  "CONDITIONAL"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "freshness": {
+                "$ref": "#/$defs/duration"
+              }
+            },
+            "required": [
+              "fact",
+              "requirement",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "Required Capability": {
+          "type": "object",
+          "properties": {
+            "task_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "task_refs"
+          ],
+          "additionalProperties": false
+        },
+        "Agent Input": {
+          "type": "object",
+          "properties": {
+            "derive": {
+              "const": true
+            }
+          },
+          "required": [
+            "derive"
+          ],
+          "additionalProperties": false
+        },
+        "Expected Agent Output": {
+          "type": "object",
+          "properties": {
+            "derive": {
+              "const": true
+            }
+          },
+          "required": [
+            "derive"
+          ],
+          "additionalProperties": false
+        },
+        "HITL": {
+          "type": "object",
+          "properties": {
+            "derive": {
+              "const": true
+            }
+          },
+          "required": [
+            "derive"
+          ],
+          "additionalProperties": false
+        },
+        "Guard / Transition condition": {
+          "type": "object",
+          "properties": {
+            "derive": {
+              "const": true
+            }
+          },
+          "required": [
+            "derive"
+          ],
+          "additionalProperties": false
+        },
+        "Next State / Branch": {
+          "type": "object",
+          "properties": {
+            "derive": {
+              "const": true
+            }
+          },
+          "required": [
+            "derive"
+          ],
+          "additionalProperties": false
+        },
+        "Timer / Exception / Fail-safe": {
+          "type": "object",
+          "properties": {
+            "timer_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "timer_refs",
+            "notes"
+          ],
+          "additionalProperties": false
+        },
+        "Safety / Audit": {
+          "type": "object",
+          "properties": {
+            "requirement_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "requirement_refs",
+            "origin_refs"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "State",
+        "Clinical Goal and Scope",
+        "Entry Trigger",
+        "Incoming Data / Evidence",
+        "Data requirement",
+        "Required Capability",
+        "Agent Input",
+        "Expected Agent Output",
+        "HITL",
+        "Guard / Transition condition",
+        "Next State / Branch",
+        "Timer / Exception / Fail-safe",
+        "Safety / Audit"
+      ],
+      "additionalProperties": false
+    },
+    "task": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "agent"
+            },
+            "identity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "episode"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "cause"
+                    },
+                    "subject_ref": {
+                      "type": "string",
+                      "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "subject_ref",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "after": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "completion_effect": {
+              "const": false
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "agent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "context": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "identity",
+            "after",
+            "completion_effect",
+            "origin_refs",
+            "agent",
+            "mode",
+            "context"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "hitl"
+            },
+            "identity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "episode"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "cause"
+                    },
+                    "subject_ref": {
+                      "type": "string",
+                      "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "subject_ref",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "after": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "completion_effect": {
+              "const": false
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "decision": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "identity",
+            "after",
+            "completion_effect",
+            "origin_refs",
+            "decision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "notify"
+            },
+            "identity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "episode"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "cause"
+                    },
+                    "subject_ref": {
+                      "type": "string",
+                      "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "subject_ref",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "after": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "completion_effect": {
+              "type": "boolean"
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "template": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1
+            },
+            "context": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "identity",
+            "after",
+            "completion_effect",
+            "origin_refs",
+            "template",
+            "recipient",
+            "context"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "effect"
+            },
+            "identity": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "episode"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "const": "cause"
+                    },
+                    "subject_ref": {
+                      "type": "string",
+                      "pattern": "^((facts|milestones)\\.[A-Za-z_][A-Za-z0-9_-]*|results\\.[A-Za-z_][A-Za-z0-9_-]*\\.[A-Za-z_][A-Za-z0-9_-]*(\\.[A-Za-z_][A-Za-z0-9_-]*)*|decisions\\.[A-Za-z_][A-Za-z0-9_-]*\\.value|state_entries\\.[A-Za-z_][A-Za-z0-9_-]*\\.(entered|generation))$"
+                    },
+                    "repeat": {
+                      "enum": [
+                        "once",
+                        "input_change",
+                        "condition_reentry",
+                        "cause_change"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "subject_ref",
+                    "repeat"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "after": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 0,
+              "uniqueItems": true
+            },
+            "completion_effect": {
+              "type": "boolean"
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "operation": {
+              "enum": [
+                "SET_FLAG",
+                "CLEAR_FLAG",
+                "SET_DASHBOARD",
+                "CLEAR_DASHBOARD"
+              ]
+            },
+            "resource": {
+              "type": "string",
+              "minLength": 1
+            },
+            "target": {
+              "type": "string",
+              "minLength": 1
+            },
+            "context": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "identity",
+            "after",
+            "completion_effect",
+            "origin_refs",
+            "operation",
+            "resource",
+            "target",
+            "context"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "work_rule": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        },
+        "stop_when": {
+          "$ref": "#/$defs/expression"
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "task",
+        "when",
+        "stop_when",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "option": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "effect": {
+              "const": "commit"
+            }
+          },
+          "required": [
+            "effect"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "effect": {
+              "const": "defer"
+            },
+            "resume_timer": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "effect",
+            "resume_timer"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "options": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/option"
+          },
+          "minProperties": 1
+        },
+        "evidence_context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirement_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "question",
+        "options",
+        "evidence_context",
+        "requirement_ref",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "timer": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "state",
+                "decision"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "anchor": {
+          "enum": [
+            "state_entered",
+            "decision_opened",
+            "decision_deferred"
+          ]
+        },
+        "after": {
+          "$ref": "#/$defs/duration"
+        },
+        "on_expire": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "task",
+                "resume_decision"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "cancel_when": {
+          "$ref": "#/$defs/expression"
+        },
+        "reset_on": {
+          "enum": [
+            "new_owner_generation"
+          ]
+        },
+        "repeat": {
+          "type": "object",
+          "properties": {
+            "max_firings": {
+              "const": 1
+            }
+          },
+          "required": [
+            "max_firings"
+          ],
+          "additionalProperties": false
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "owner",
+        "anchor",
+        "after",
+        "on_expire",
+        "cancel_when",
+        "reset_on",
+        "repeat",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "initial": {
+          "const": "ACTIVE"
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ACTIVE",
+              "DORMANT",
+              "CLINICAL_CLOSED",
+              "ADMIN_CLOSING",
+              "COMPLETED"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
+        },
+        "completion": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "COMPLETED"
+            },
+            "wait_for": {
+              "const": "owned_work"
+            },
+            "after_completion": {
+              "const": "reject"
+            }
+          },
+          "required": [
+            "state",
+            "wait_for",
+            "after_completion"
+          ],
+          "additionalProperties": false
+        },
+        "origin_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "initial",
+        "states",
+        "projection",
+        "completion",
+        "origin_refs"
+      ],
+      "additionalProperties": false
+    },
+    "clinical": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "chain-clinical/v1"
+        },
+        "spec_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "enum": [
+            "minimum-demo",
+            "extension-review"
+          ]
+        },
+        "contract_version": {
+          "const": "chain-fact-execution/v1"
+        },
+        "context_service": {
+          "type": "object",
+          "properties": {
+            "agent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mode": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "agent",
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        "origin_refs": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/origin"
+          },
+          "minProperties": 1
+        },
+        "facts": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/fact"
+          },
+          "minProperties": 1
+        },
+        "contexts": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/context"
+          },
+          "minProperties": 1
+        },
+        "milestones": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/milestone"
+          },
+          "minProperties": 0
+        },
+        "states": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/state"
+          },
+          "minProperties": 1
+        },
+        "state_projection": {
+          "$ref": "#/$defs/projection"
+        },
+        "tasks": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/task"
+          },
+          "minProperties": 1
+        },
+        "work_rules": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/work_rule"
+          },
+          "minProperties": 0
+        },
+        "decisions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/decision"
+          },
+          "minProperties": 0
+        },
+        "timers": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/timer"
+          },
+          "minProperties": 0
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/lifecycle"
+        }
+      },
+      "required": [
+        "schema",
+        "spec_id",
+        "version",
+        "profile",
+        "contract_version",
+        "context_service",
+        "origin_refs",
+        "facts",
+        "contexts",
+        "milestones",
+        "states",
+        "state_projection",
+        "tasks",
+        "work_rules",
+        "decisions",
+        "timers",
+        "lifecycle"
+      ],
+      "additionalProperties": false
+    },
+    "site": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "chain-site/v1"
+        },
+        "site_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "system": {
+                "type": "string",
+                "minLength": 1
+              },
+              "binding": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "system",
+              "binding"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1
+        },
+        "fact_bindings": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "record_type": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "source",
+                "field"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "minProperties": 0
+        },
+        "role_bindings": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "minProperties": 0
+        },
+        "recipients": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "channel": {
+                "type": "string",
+                "minLength": 1
+              },
+              "address_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "channel",
+              "address_ref"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 0
+        },
+        "effect_targets": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "binding": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 0
+        }
+      },
+      "required": [
+        "schema",
+        "site_id",
+        "version",
+        "sources",
+        "fact_bindings",
+        "role_bindings",
+        "recipients",
+        "effect_targets"
+      ],
+      "additionalProperties": false
+    },
+    "requirement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "predicate"
+            },
+            "when": {
+              "$ref": "#/$defs/expression"
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "kind",
+            "when",
+            "origin_refs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "hitl"
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "confirmations": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+              },
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              },
+              "minProperties": 0
+            },
+            "origin_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "kind",
+            "roles",
+            "confirmations",
+            "origin_refs"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "chain-safety/v1"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "enum": [
+            "synthetic-draft",
+            "review-only"
+          ]
+        },
+        "requirements": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/requirement"
+          },
+          "minProperties": 1
+        },
+        "agent_approvals": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "versions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              },
+              "data_scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "versions",
+              "actions",
+              "data_scopes"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 0
+        },
+        "query_approvals": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              },
+              "data_scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "fields",
+              "data_scopes"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 0
+        },
+        "forbidden_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "notification_templates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "allowed_effect_operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema",
+        "policy_id",
+        "version",
+        "purpose",
+        "requirements",
+        "agent_approvals",
+        "query_approvals",
+        "forbidden_actions",
+        "notification_templates",
+        "allowed_effect_operations"
+      ],
+      "additionalProperties": false
+    },
+    "deployment": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "chain-deployment/v1"
+        },
+        "deployment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "site_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agents": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "implementation_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "timeout_s": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "backend": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "fixture",
+                      "structured",
+                      "api"
+                    ]
+                  },
+                  "config_ref": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "implementation_ref",
+              "version",
+              "timeout_s",
+              "backend"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1
+        },
+        "source_bindings": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minProperties": 1
+        },
+        "notifier_binding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effect_binding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "activity": {
+          "type": "object",
+          "properties": {
+            "timeout_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maximum_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "timeout_s",
+            "maximum_attempts"
+          ],
+          "additionalProperties": false
+        },
+        "preparation": {
+          "type": "object",
+          "properties": {
+            "timeout_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "maximum_attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "maximum_pages": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maximum_rounds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "timeout_s",
+            "maximum_attempts",
+            "maximum_pages",
+            "maximum_rounds"
+          ],
+          "additionalProperties": false
+        },
+        "reconciliation": {
+          "type": "object",
+          "properties": {
+            "on_startup": {
+              "const": true
+            },
+            "on_reconnect": {
+              "const": true
+            },
+            "poll_interval_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "on_startup",
+            "on_reconnect",
+            "poll_interval_s"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema",
+        "deployment_id",
+        "version",
+        "site_id",
+        "agents",
+        "source_bindings",
+        "notifier_binding",
+        "effect_binding",
+        "activity",
+        "preparation",
+        "reconciliation"
+      ],
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "chain-module-metadata/v1"
+        },
+        "agents": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "request_contract": {
+                "type": "string",
+                "minLength": 1
+              },
+              "result_contract": {
+                "type": "string",
+                "minLength": 1
+              },
+              "modes": {
+                "type": "object",
+                "propertyNames": {
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "output_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1,
+                      "uniqueItems": true
+                    }
+                  },
+                  "required": [
+                    "output_fields"
+                  ],
+                  "additionalProperties": false
+                },
+                "minProperties": 1
+              },
+              "requires_summary": {
+                "type": "boolean"
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              },
+              "data_scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 0,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "version",
+              "request_contract",
+              "result_contract",
+              "modes",
+              "requires_summary",
+              "actions",
+              "data_scopes"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1
+        }
+      },
+      "required": [
+        "schema",
+        "agents"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

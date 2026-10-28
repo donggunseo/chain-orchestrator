@@ -4,8 +4,8 @@ import hashlib
 import re
 from datetime import timedelta
 
-from chain_demo.source_contracts import validate_record
-from chain_demo.validation import canonical_hash, timestamp
+from chain.common.source_contracts import validate_record
+from chain.common.validation import canonical_hash, timestamp
 
 
 def _set_relative(result,original,path,source_time,occurred):

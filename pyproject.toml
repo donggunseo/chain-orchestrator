@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chain-orchestrator"
+version = "0.4.0"
+description = "Fact-based clinical orchestration with Temporal"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "temporalio==1.31.0",
+  "PyYAML>=6.0.2,<7",
+]
+
+[tool.setuptools.packages.find]
+include = ["chain", "chain.*", "integration", "integration.*"]
+
+[tool.setuptools.package-data]
+chain = ["resources/*.json"]

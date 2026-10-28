@@ -1,0 +1,16 @@
+{
+  "recorded_schema": "chain-recorded/v0.3",
+  "test_mode_only": true,
+  "responses": [
+    {
+      "checkpoint": "HITL_1_PROCEED_TO_CT",
+      "decision": "NOT_STROKE_PATHWAY",
+      "actor": {
+        "role": "EM_PHYSICIAN",
+        "staff_id": "STF-20431"
+      },
+      "confirmed_items": [],
+      "comment": "명시적 합성 경로 종료"
+    }
+  ]
+}

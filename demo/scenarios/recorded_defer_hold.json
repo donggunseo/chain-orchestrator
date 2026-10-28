@@ -1,0 +1,51 @@
+{
+  "recorded_schema": "chain-recorded/v0.3",
+  "test_mode_only": true,
+  "responses": [
+    {
+      "checkpoint": "HITL_1_PROCEED_TO_CT",
+      "decision": "DEFER",
+      "actor": {
+        "role": "EM_PHYSICIAN",
+        "staff_id": "STF-20431"
+      },
+      "confirmed_items": [],
+      "comment": "명시적 합성 보류"
+    },
+    {
+      "checkpoint": "HITL_1_PROCEED_TO_CT",
+      "decision": "PROCEED_TO_CT",
+      "actor": {
+        "role": "EM_PHYSICIAN",
+        "staff_id": "STF-20431"
+      },
+      "confirmed_items": [],
+      "comment": "Rt. hemiparesis + global aphasia, LKW 13:35 보호자 확인. 응급 Stroke CT 진행. CT 오더는 OCS에서 별도 입력."
+    },
+    {
+      "checkpoint": "HITL_2_THROMBOLYSIS",
+      "decision": "HOLD",
+      "actor": {
+        "role": "NEUROLOGIST",
+        "staff_id": "STF-31178"
+      },
+      "confirmed_items": [],
+      "comment": "명시적 합성 보류"
+    },
+    {
+      "checkpoint": "HITL_2_THROMBOLYSIS",
+      "decision": "THROMBOLYSIS_YES",
+      "actor": {
+        "role": "NEUROLOGIST",
+        "staff_id": "STF-31178"
+      },
+      "confirmed_items": [
+        "NCCT_NO_HEMORRHAGE_PHYSICIAN_READ",
+        "LKW_RECONFIRMED_WITH_FAMILY",
+        "BP_RECHECK_BELOW_185_110",
+        "NO_ANTICOAGULANT_RECONFIRMED"
+      ],
+      "comment": "NCCT 출혈 없음, early ischemic change 명확하지 않음(hyperdense MCA sign 의심). 보호자에게 LKW 13:35 재확인. BP 재측정 <185/110 확인. IV alteplase 시행 예정, 처방·투약은 EMR 기존 절차로 진행."
+    }
+  ]
+}

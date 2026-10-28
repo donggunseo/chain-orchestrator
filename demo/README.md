@@ -1,210 +1,253 @@
-# 가상 에피소드로 CHAIN 실행하기
+# CHAIN v0.4 데모
 
-이 데모는 가상 병원의 기록·검사 Event를 CHAIN에 보내고, 콘솔에서 의료진 결정을 입력해
-전체 Workflow를 확인한다. Temporal Service·Worker·Signal·Activity·Timer는 실제로 실행한다.
-병원 자료와 Agent 출력은 합성이며, 알림과 EHR 표시·취소는 외부 전달 없이 `MOCK_RECORDED`로 기록한다.
+합성 Episode의 기록·검사를 공개하고, 엔진이 조회해 반영하는 과정을 확인한다.
+의료진 결정은 별도의 결정 입력으로 전달한다.
+주 State, 별도로 진행하는 작업, HITL 근거 개정과 타이머를 콘솔에서 확인할 수 있다.
+실제 병원/API에 접속하거나 처방·투약하지 않는다. 알림과 EHR 표시는 `MOCK_RECORDED`다.
 
-모든 명령은 저장소 루트에서 실행한다. Python 3.12를 권장한다.
-이 디렉터리와 해당 합성 Episode는 전달본에 포함된다.
-State별 처리·선택·전이는 [루트 README의 단계별 안내](../README.md#43-화면을-따라-진행하기),
-Agent/API/Notifier 입출력은 [통합 계약 안내](../README.md#6-agent-구현-연결)를 함께 확인한다.
+`python -m demo`는 현재 엔진의 합성 데모를 시작한다.
+최소 범위는 S0~S3와 경로 종료 분기이며 입원·전원·EVT 전체를 시연하는 자료는 포함하지 않는다.
 
-## 1. 설치하고 실행하기
+## 준비와 실행
 
-```bash
+저장소 루트에서 Python 3.12와 기존 의존성을 준비한다.
+
+```sh
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-아래 명령 하나로 임시 Temporal Service, Worker, 가상 병원과 콘솔을 함께 시작한다.
-별도 Worker를 실행할 필요는 없다. 첫 실행에는 SDK가 Temporal 실행 파일을 내려받을 수 있다.
+Service 없이 새 엔진을 확인하는 Local 실행:
 
-```bash
-.venv/bin/python -m demo \
-  --backend temporal --start-local \
-  --test-mode --test-timer-scale 0.01 \
-  --run-timeout 1800 \
-  --output-dir "output/demo-$(date +%Y%m%d-%H%M%S)"
+```sh
+.venv/bin/python -m demo --backend local --test-mode \
+  --test-timer-scale 0.1 --test-poll-interval-s 1 --run-timeout 1800 \
+  --output-dir "output/fact-local-interactive-$(date +%Y%m%d-%H%M%S)"
 ```
 
-- `--test-mode`: 합성 시나리오의 가상 시계를 사용한다. 병원 Event는 실제 선행 사건을 기다린다.
-- `--test-timer-scale 0.01`: Workflow의 실제 타이머를 데모에서만 100배 줄인다. 재확인 10분은 실제 6초다.
-- `--run-timeout 1800`: 데모를 최대 30분 실행한다. 시간 제한이 지나면 부분 결과를 보존한다.
-- 출력 디렉터리는 실행마다 새로 지정한다. 이미 있는 디렉터리는 덮어쓰지 않는다.
+### Temporal CLI 준비
 
-이미 실행 중인 Service를 사용할 때는 `--start-local`을 다음 옵션으로 바꾼다.
+`--start-local`을 사용하려면 설치된 Temporal CLI 실행 파일의 절대경로를 지정한다.
+PATH에서 설치 경로가 나오는지 먼저 확인한다.
 
-```text
---address 127.0.0.1:7233
+```sh
+command -v temporal
 ```
 
-이 경우에도 데모가 자신의 Worker를 생성한다. 개발 Service를 별도로 준비하는 방법은
-[통합 실행 안내](../README.md)에 있다.
+경로가 출력되면 다음 명령으로 설정한다.
 
-## 2. 콘솔에서 확인할 내용
+```sh
+export CHAIN_TEMPORAL_SERVER_PATH="$(command -v temporal)"
+```
 
-화면에는 현재 State, 자료·Agent 처리 기록, 고정된 HITL 근거, 결정 선택지가 표시된다.
-각 자료는 값·상태·출처 버전·기록 시각·CHAIN이 알게 된 시각을 구분한다.
-미확보·철회·오류·충돌 자료는 해당 상태로 표시한다.
-긴 문서는 기본 화면에서 미리보기로 보여주며, 임상 요약을 새로 추론하지 않는다.
+출력이 없으면 이미 설치한 CLI의 절대경로를 직접 지정한다.
+이 개발 컴퓨터에서 확인한 경로는 아래와 같다. 다른 컴퓨터의 공통 경로는 아니다.
 
-현재 Mock은 특정 합성 입력과 평가시각에 대응한다. 기본 시나리오에서는 다음 표시를 기다린 뒤
-결정을 입력한다. 이는 데모의 입력 안내이며 엔진의 임상 전이조건이 아니다.
+```sh
+export CHAIN_TEMPORAL_SERVER_PATH=/tmp/temporal-sdk-python-1.31.0
+```
 
-| 콘솔 표시 | 할 일 |
+CLI 자체가 없으면 먼저 설치 파일을 준비한다. `/tmp`의 실행 파일은 임시 위치이므로 존재 여부를 다시 확인한다.
+`/path/to/temporal` 같은 예시 경로를 그대로 입력하지 않는다. 설정한 뒤 같은 터미널에서 확인한다.
+
+```sh
+"$CHAIN_TEMPORAL_SERVER_PATH" --version
+```
+
+버전이 출력되면 아래 명령을 실행한다. 전체 설명은 [README의 CLI 경로 설정](../README.md#temporal-cli-경로-설정)을 따른다.
+
+### 임시 Temporal Service 실행
+
+위 CLI 준비가 끝난 터미널에서 실행한다.
+
+```sh
+.venv/bin/python -m demo --backend temporal --start-local --test-mode \
+  --test-timer-scale 0.1 --test-poll-interval-s 1 --run-timeout 1800 \
+  --output-dir "output/fact-temporal-interactive-$(date +%Y%m%d-%H%M%S)"
+```
+
+`--start-local`은 설치된 Temporal CLI로 임시 in-memory Service와 Worker를 함께 시작한다.
+CLI를 다운로드하지 않으며 운영용 영속 Service 배포가 아니다.
+`FileNotFoundError: Set CHAIN_TEMPORAL_SERVER_PATH ...`는 지정한 CLI를 찾지 못했다는 뜻이다.
+이 단계에서 실패하면 Workflow가 시작되지 않아 `state=None`으로 기록된다.
+
+### 기존 Temporal Service 연결
+
+Service가 이미 실행 중이면 아래 명령으로 연결한다. CLI와 `CHAIN_TEMPORAL_SERVER_PATH`는 필요 없다.
+`localhost:7233`은 로컬 예시이며 외부 Service는 실제 주소로 바꾼다.
+
+```sh
+.venv/bin/python -m demo --backend temporal --address localhost:7233 --test-mode \
+  --test-timer-scale 0.1 --test-poll-interval-s 1 --run-timeout 1800 \
+  --output-dir "output/fact-temporal-existing-$(date +%Y%m%d-%H%M%S)"
+```
+
+`--start-local`과 `--address`는 함께 사용하지 않는다.
+기존 Service 연결은 기본 `default` namespace를 사용하며 namespace·TLS·API key 옵션은 없다.
+두 방식 모두 데모 전용 Worker를 시작한다. 별도 Worker와 같은 Queue를 함께 처리하지 않는다.
+실제 백엔드/Worker는 SDK로 Service에 연결하며 CLI 경로를 사용하지 않는다.
+운영 namespace·인증 설정은 [README의 Service 연결 설정](../README.md#temporal-service-연결-설정)을 따른다.
+
+### 실행 조건
+
+출력 디렉터리는 실행마다 새 경로를 사용한다. 존재하는 디렉터리는 덮어쓰지 않는다.
+원본 Episode의 도착시각과 상대시간을 사용하는 고정 합성 fixture이므로 `--test-mode`가 필요하다.
+위 대화형 예제는 사람이 근거를 확인하고 입력할 시간과 자료 반영 대기시간을 따로 설정한다.
+
+| 설정 | 대화형 예제 | 적용 범위 |
+|---|---|---|
+| `--test-timer-scale` | `0.1` | Clinical의 보류·재알림 타이머를 1/10로 축소. 10분 → 1분 |
+| `--test-poll-interval-s` | `1` | 원천자료 조회 주기 종료 후 다음 조회까지 1초 대기 |
+| `--run-timeout` | `1800` | 데모 전체 실행 제한 30분 |
+
+기존 `--test-timer-scale 0.01`은 10분을 6초로 줄이므로 사람이 조작하기에는 빠르다.
+더 여유 있게 확인하려면 `--test-timer-scale 1`로 원래 임상 시간을 사용한다.
+Clinical 사본과 Deployment 사본에만 적용하며 원본 YAML이나 진행 중 실행의 설정을 바꾸지 않는다.
+HITL 지연 타이머는 알림만 발생시키며 자동 승인·거부나 질문 만료가 아니다.
+DEFER/HOLD 타이머는 재질문을 요청하고 `ready`로 먼저 재개할 수도 있다.
+
+원본 자료 조회 간격은 30초다. 위 대화형 예제에서는 테스트 옵션으로 1초로 줄인다.
+공개된 자료가 화면에 반영되기까지 조회·Activity·Agent/근거 준비 등의 처리 시간은 추가될 수 있다.
+가상 병원이 자료를 공개한 즉시 Signal을 보내지는 않는다.
+Agent·HITL 등의 준비 직전에도 같은 백엔드 client로 다시 조회한다.
+운영 기본값을 바꾸려면 사용하는 Deployment YAML의 `reconciliation.poll_interval_s`를 수정한다.
+정확한 파일과 적용 범위는 [README의 주기 설정](../README.md#원천자료-조회와-주기-설정)을 따른다.
+
+짧은 자동 시험에는 `--test-mode --test-poll-interval-s 0.2`를 명시할 수 있다.
+이 옵션은 이번 실행의 Deployment 사본에만 적용하며 기본 30초와 원본 파일을 변경하지 않는다.
+`--test-timer-scale`은 Clinical 타이머에만 적용하므로 자료 조회 간격은 위 옵션으로 별도 지정한다.
+
+병원의 가상 시계는 `TEST_CLOCK_AT`으로 표시한다. 엔진의 적용시각과 Timer는 실제 시계를 사용한다.
+State/결정이 실제 수락된 것을 관측한 뒤 가상 시계의 현재 위치를 상대시간 기준점으로 잡고,
+원래 엔진 처리시각도 따로 보존한다. 가상 시계 전진만으로 Timer가 완료됐다고 표시하지 않는다.
+
+### 타이머 화면
+
+일반 터미널에서 실행하면 타이머는 화면 하단의 한 줄에서 갱신된다.
+여러 타이머는 같은 줄에 함께 표시하고, 그 위의 영역에서 로그와 HITL 입력을 처리한다.
+카운트다운을 갱신하려고 입력 줄을 다시 출력하거나 입력 버퍼를 읽지 않는다.
+상태줄은 화면 폭에 맞춰 줄이며, 같은 내용은 다시 그리지 않는다.
+
+실제 만료·취소 등의 상태 변경은 기존 로그로 기록한다. 0초 표시는 만료 처리 대기이며
+실제 Timer 완료를 대신하지 않는다. 조회가 지연되면 남은 시간을 확정하지 않고 확인 지연으로 표시한다.
+타이머가 모두 종료되면 상태줄을 비우고, 종료·EOF·중단 시 기본 스크롤 영역을 복원한다.
+
+표준 입출력이 터미널이 아닌 IDE 실행창·파일·파이프 또는 `TERM=dumb`에서는 제어문자를 쓰지 않고
+일반 로그 형식을 사용한다. 실행 중 창 크기를 바꾸면 입력 줄이 재배치될 수 있으므로
+해당 실행의 상태줄 갱신을 중단하고 기본 스크롤 영역으로 돌아간다. 이때도 엔진·Event 처리와 타이머는 계속된다.
+이 표시 방식은 엔진·조회 주기·임상 타이머를 바꾸지 않는다.
+
+## 화면을 따라 진행하기
+
+1. 초기에는 식별 정보·나이·성별·병상·도착시각만 있다. 간호/초진 자료가 공개되면 Screening을 실행한다.
+2. HITL #1이 열려도 독립적인 CBC/COAG 결과는 계속 유입된다.
+   `DEMO_DECISION_READY | HITL_1_PROCEED_TO_CT`가 보이면 기본 시나리오의 응답 시점에 도달한 것이다.
+3. PROCEED_TO_CT 결정이 엔진에 수락되고 S2에 들어온 뒤 가상 의료진이 OCS 오더를 입력한다.
+   NCCT는 그 오더를 기준으로 도착한다. CHAIN의 자동 오더가 아니다.
+4. 해당 NCCT와 오더가 일치하면 S2_1을 표시하고 tPA final 가상 결과·근거 준비 후 HITL #2를 연다.
+5. YES는 S3, NO는 S3N으로 끝난다. S3는 이 최소 시연의 시행계획 확인 종료이며 실제 치료 완료가 아니다.
+
+선택 코드/번호, 모의 역할·직원 ID·사유와 요구되는 확인사항을 입력한다.
+HITL #1의 NOT_STROKE_PATHWAY는 S1X, Screening NEGATIVE는 S0X로 끝난다.
+DEFER/HOLD는 같은 State에 머무르며 타이머로 다시 질문한다.
+보류 화면의 `ready`는 기다리는 도중 먼저 재요청하는 기능이다. 새 결정과 구분해 전송한다.
+
+| 명령 | 동작 |
 |---|---|
-| `DEMO_DECISION_READY \| HITL_1_PROCEED_TO_CT` | HITL #1 결정 입력. 이 시점까지 독립 CBC/COAG 결과가 유입된다 |
-| `DEMO_DECISION_READY \| HITL_2_THROMBOLYSIS` | HITL #2 결정 입력 |
+| `docs` | 현재 근거 개정이 참조한 정확한 버전의 원문 |
+| `json` | 현재 질문·판단 Snapshot·선행 결과·직전 확인·별도 출처 원문 |
+| `docs 1`, `json 1` | 같은 요청의 지정한 과거 근거 개정. 참고 열람이며 결정은 최신 개정에만 응답 |
+| 보류 중 `ready` | 역할/ID를 입력하고 백엔드와 같은 native 재개 계약 전송 |
+| `q` 또는 EOF | 결정을 만들지 않고 콘솔 종료. Workflow cancel/terminate 요청은 전송하지 않음 |
 
-선택 번호 또는 화면의 코드를 입력하고, 모의 역할·ID·사유를 입력한다.
-HITL #2의 YES 선택에는 화면에 표시된 네 확인사항을 각각 확인해야 한다.
-다른 시각이나 지원되지 않는 입력에 대응하는 fixture가 없으면 `FIXTURE_NOT_FOUND`로 종료한다.
+관련 자료가 갱신되면 같은 질문 ID의 근거 개정이 바뀐다. 입력 중 개정되면 이전 입력을 폐기하고
+최신 근거를 확인한 뒤 다시 응답한다. 관련 없는 자료는 해당 질문을 바꾸지 않는다.
+응답 전송 성공과 엔진의 수락/거부는 별도 표시한다.
+`docs/json`은 선택한 개정의 자료만 보이고 최신 원문을 과거 개정에 섞지 않는다.
 
-| 입력 명령 | 화면 동작 |
+미확보·최신 여부 미확인·충돌은 그대로 표시한다. 원본 NIHSS 자료는 출처별 단위 표기가 달라
+현재 `CONFLICT`로 남는다. 항응고제의 원본 `NO_EVIDENCE`도 확인된 음성으로 바꾸지 않고 `UNKNOWN`으로 남는다.
+진행 중 Agent의 이전 입력 결과는 참고용이며, 완료 후 최신 입력으로 재실행한다.
+Summary는 확보된 구조화 자료를 요청 범위로 조합하는 Mock이며 NLP 구현이 아니다.
+
+## 기록된 응답으로 전체 연결 확인
+
+자동 응답은 다음 명시적 테스트 옵션에서만 사용한다.
+아래 `--start-local` 명령은 위 CLI 경로 설정을 완료한 같은 터미널에서 실행한다.
+
+```sh
+.venv/bin/python -m demo --backend temporal --start-local --test-mode \
+  --hitl recorded --recorded demo/scenarios/recorded_hitl.json \
+  --test-poll-interval-s 0.2 \
+  --expected demo/scenarios/expected.json --run-timeout 180 \
+  --output-dir "output/fact-temporal-recorded-$(date +%Y%m%d-%H%M%S)"
+```
+
+Local은 `--backend local`로 바꾸고 `--start-local`을 뺀다.
+기존 Service는 `--start-local` 대신 `--address localhost:7233`을 사용하며 CLI 경로가 필요 없다.
+완료 시 `RUN_OUTCOME | COMPLETED | state=S3`와 종료코드 0을 남긴다.
+기대 결과는 실행이 끝난 뒤에만 비교하고 Workflow에 전달하지 않는다.
+사용 가능한 합성 응답/기대 자료:
+
+| 시연 | 응답 | 기대 결과 |
+|---|---|---|
+| 기본 YES | `recorded_hitl.json` | `expected.json` |
+| HITL #1 경로 종료 | `recorded_s1x.json` | `expected_s1x.json` |
+| HITL #2 NO | `recorded_s3n.json` | `expected_s3n.json` |
+| DEFER→PROCEED→HOLD→YES | `recorded_defer_hold.json` | `expected.json`; 짧은 재질문을 위해 `--test-timer-scale 0.01` |
+
+파일은 모두 `demo/scenarios/` 아래다. NEGATIVE는 별도 고정 fixture 프로필
+`--fixture-profile negative`로 실행한다. 이 경우 콘솔 요청 없이 S0X로 종료하며
+`--expected demo/scenarios/expected_s0x.json`으로 확인할 수 있다.
+fixture에 없는 입력은 `FIXTURE_NOT_FOUND`로 명시 실패한다. 실행 중 정답을 생성하거나 PASS로 대체하지 않는다.
+
+## 출력 자료
+
+| 파일 | 내용 |
 |---|---|
-| `docs` | 지금 열린 요청의 근거가 참조하는 출처 원문 보기 |
-| `json` | 판단 근거와 출처 원문을 구분한 요청 전체 JSON 보기 |
-| 보류 중 `ready` | 모의 역할·ID를 입력해 같은 HITL의 재요청 전송 |
-| `q` | 결정을 전송하지 않고 데모 입력 종료. Workflow 취소 입력과 구분 |
+| `manifest.json`, `definition.json` | 실행/설정/설치/데모 코드 pin, 실제 공개 정의, 합성 모드와 가속 설정 |
+| `clinical-effective.yaml` | 시간을 가속한 경우 이번 실행에 고정한 Clinical 사본 |
+| `deployment-effective.yaml` | 테스트용 조회 간격을 명시한 경우 이번 실행에 고정한 Deployment 사본 |
+| `snapshot.json` | 현재 State·마일스톤·작업·HITL 근거 개정·수락 결정·처리/확인 이력 |
+| `progress.json`, `snapshot-status.json` | 마지막 경량 진행 정보와 전체 Snapshot 확보 여부·조회 진단. 전체 조회가 실패하면 `snapshot.json`을 경량 자료로 대체하지 않음 |
+| `query-diagnostics.json`, `close-diagnostics.json` | 진행 조회의 실패/재시도/회복·소진, 종료 Snapshot/History/상태/Replay/정리의 단계별 결과 |
+| `commands.jsonl` | 정확 Activity 요청·결과·오류·시도. 합성 자료를 포함 |
+| `simulation.json`, `publications.json`, `source_publications.json` | 인과 기준점·원본/변환 해시·공개 사건·가상 의료진 오더 |
+| `source_queries.json` | 직전 확인/독립 보정·정확 조회와 범위·호출 시각 |
+| `backend_queries.json` | 주기적 조회와 작업 준비가 공통 `fetch_source`로 전달한 요청·목적·자료 범위 |
+| `outcome.json`, `comparison.json` | 완료/실패/부분 종료와 사후 비교 |
+| `temporal_history.json`, `temporal_execution.json`, `replay.json` | Temporal 실행에서 실제 History·상태·저장 History Replay 결과 |
 
-열린 HITL의 근거는 이후 정보가 추가되어도 그대로 유지된다. 실시간 Event·Agent 결과는 별도로 표시한다.
+Local 결과는 실제 Service 시험이 아니다. Temporal 결과도 합성 API/Agent/Mock의 연결 확인이다.
+코드 2는 입력 종료·시간 초과 등 부분 결과, 코드 1은 실패/사후 비교 실패를 나타낸다.
+`q` 후 기존 Service의 Workflow는 남지만 embedded Worker는 정리된다.
+임시 in-memory Service를 사용했다면 데모 종료 때 Service와 메모리 History도 사라지므로 저장 파일로 확인한다.
 
-`docs`는 `source_documents`에 고정한 출처 원문을 보여준다. 판단 Snapshot에 구조화 항목만 들어 있어도
-그 항목이 참조하는 기록·버전의 문서가 보존되어 있다면 원문을 확인할 수 있다.
-문서가 없는 검사 기록은 `NO_DOCUMENT`, 해당 버전의 원문을 사용할 수 없는 출처는 `UNAVAILABLE`로 표시한다.
-원문이 없는 경우에는 해당 기록 미보존·기준 시각 이후 유입·문서 상태나 본문 문제를 사유로 구분한다.
-미확보 상태를 최신 문서로 대체하지 않는다.
+## 모듈 연결 위치
 
-`json`의 `snapshot`은 Agent가 판단에 사용한 입력이고, `source_documents`는 별도의 출처 열람자료다.
-원문 열람은 Agent 입력이나 판단 근거를 변경하지 않는다. HOLD 후 `ready`로 새 질문이 열려도 같은 구분을 사용한다.
-새 질문의 Request ID에 연결된 자료를 확인하며, 이전 질문의 자료는 HITL 이력에 남는다.
-
-출처 원문은 판단 Snapshot의 `known_at`까지 알려진 자료 중에서 고정한다.
-`frozen_at`은 열람자료를 고정한 시각이다. 이후 기록 추가로 두 자료를 덮어쓰지 않는다.
-이전 형식의 기록에 `source_documents`가 없으면 미제공으로 표시하고,
-고정 Snapshot에 포함된 문서가 있는 경우에만 그 문서를 보여준다.
-`json`에도 없는 원문을 조회할 수 있다고 안내하지 않는다.
-입력 중에도 자료와 Agent 응답을 계속 처리한다.
-
-S1 진입에서는 EHR 플래그와 대시보드 표시 활성화, 세 준비 알림이 Mock으로 기록된다.
-HITL #1에서 NOT_STROKE_PATHWAY를 선택하면 S1X로 가서 같은 표시를 해제하고,
-CT실·간호팀·당직 신경과에 대한 준비 취소 알림을 별도로 기록한다.
-SQLite의 최종 Mock 표시 상태는 늦게 완료된 이전 활성화 요청이 취소를 되돌리지 않도록 버전으로 관리한다.
-이 과정은 실제 EHR 화면이나 SMS를 변경하지 않으며 이미 보낸 메시지를 회수하는 기능도 아니다.
-표시 Adapter의 요청·응답과 실제 연결 위치는 [루트 README 8.3절](../README.md#83-ehr-표시대시보드-활성화와-취소)에 있다.
-
-설정의 State 이름과 설명은 의료진 뷰어의 13개 State 명세를 따른다.
-각 명세의 자료요건·유효시간은 현재 확보한 Context의 상태를 보여주는 항목이며,
-추가 임상 전이조건을 자동으로 만들지 않는다. 수정 방법은 [YAML 작성 안내](../README.md#92-state-명세와-yaml)에 있다.
-Summary 준비가 실패하면 HITL이 열리지 않고, 종료 State에서 완료된 Workflow는 후속 Event를 계속 받지 않는다.
-
-## 3. 보류된 HITL과 재요청
-
-HOLD/DEFER 응답이 수락되면 현재 State를 유지하고 재요청 타이머를 시작한다.
-타이머가 끝나면 같은 HITL을 다시 준비한다. 의료진이 먼저 결정할 준비가 되면 보류 화면에서 `ready`를 입력한다.
-모의 역할·ID를 확인한 뒤 재요청을 전송하며, 수락·준비 상태와 새 HITL 생성 여부를 화면에 표시한다.
-재요청 자체는 승인이나 경로 종료 결정이 아니다.
-
-```text
-결정 보류 중 · 현재 State 유지
-ready: 지금 다시 결정하기
-q: 콘솔 입력 종료
-```
-
-근거 준비가 끝나면 새 Request ID와 고정 Snapshot으로 결정 화면을 연다.
-checkpoint가 참조하는 유효한 선행 Agent 결과의 Snapshot을 사용하며 같은 입력의 Summary 캐시는 재사용할 수 있다.
-관련 근거의 정정으로 결과가 무효화된 경우에는 필요한 재평가를 먼저 완료한다.
-이전 보류 응답과 근거는 이력에 남는다. 준비 중에는 별도의 준비를 중복 시작하지 않는다.
-Summary 등 근거 준비가 실패하면 오류를 표시하고 유효하지 않은 근거로 질문을 열지 않는다.
-새 HITL이 열리기 전까지 기존 자동 재요청 타이머를 유지하며, 실패 후에는 수동 재요청을 다시 보낼 수 있다.
-준비 중 타이머가 만료되면 준비를 중복 시작하지 않는다. 그 준비도 실패하면 `ready`로 다시 요청한다.
-합성 Agent의 fixture 부재·모호함은 시험 오류로 실행을 종료한다. 보류 화면의 재시도로 성공값을 대체하지 않는다.
-보류·입력·준비 중에도 독립적인 병원 Event와 Agent 응답은 처리한다.
-일반 자료 수신만으로 보류된 질문을 다시 열지 않는다.
-
-타이머에는 진행 막대, 남은 시간, 실행 시계와 원래 설정 시간이 표시된다.
-가상 병원의 시계와 Temporal 타이머의 실제 경과시간은 별개다.
-화면의 짧은 타이머는 약 1초, 긴 타이머는 약 5초 변화 간격으로 갱신한다.
-
-```text
-TIMER | … | ⏱ Temporal Workflow 타이머 · 실제 Temporal 타이머
-    [■■■■□□□□□□□□] 남은 00:04 / 전체 00:06 · 대기 중 · 원래 설정 10:00
-```
-
-남은 시간이 0이면 실제 발생을 확인하기 전까지 `만료 처리 대기`로 표시한다.
-조회가 지연되면 남은 시간을 만들어 채우지 않고 `현재 상태 확인 지연`으로 표시한다.
-타이머 만료와 수동 재요청이 경합해도 새 질문은 하나만 준비한다.
-새 요청이 열리면 해당 보류 타이머를 취소하고 새 Request ID의 근거를 확인해 결정한다.
-다시 보류한 경우 이전 타이머가 새 보류를 해제하지 않는다.
-
-## 4. 자동으로 전체 경로 확인하기
-
-사람의 입력 없이 정해진 합성 응답으로 연결 상태를 확인하려면 명시적으로 recorded 모드를 사용한다.
-이 응답 파일과 기대 경로는 데모만 읽으며 공통 엔진과 Workflow에는 전달하지 않는다.
-
-```bash
-.venv/bin/python -m demo \
-  --backend temporal --start-local --test-mode \
-  --hitl recorded \
-  --recorded demo/scenarios/recorded_hitl.json \
-  --expected demo/scenarios/expected.json \
-  --run-timeout 180 \
-  --output-dir "output/demo-check-$(date +%Y%m%d-%H%M%S)"
-```
-
-기본 기대 경로는 `S0 → S1 → S2 → S2_1 → S3`다.
-성공하면 종료코드 0과 `RUN_OUTCOME | COMPLETED`가 출력된다.
-임상 Agent의 실제 성능·치료 적합성을 검증하는 시험은 아니다.
-
-Service 없이 같은 흐름을 확인하려면 `--backend local`을 사용하고 `--start-local`을 뺀다.
-이 실행은 Local Engine 확인이며 실제 Temporal 통합시험으로 세지 않는다.
-
-## 5. 결과와 Replay 확인하기
-
-| 출력 파일 | 내용 |
+| 작업 | 확인할 코드/계약 |
 |---|---|
-| `outcome.json` | 실행 성공·실패·중단과 최종 State |
-| `snapshot.json` | 전체 Context, 현재 State 명세·자료요건 표시, State 경로, Agent 결과, HITL의 고정 근거·출처 열람자료·보류·재요청 이력, 표시·취소 receipt와 감사 기록 |
-| `manifest.json` | 실행에 고정한 Workflow·Policy·Registry·구현 버전과 데모 설정 |
-| `commands.jsonl` | 실제 요청·응답과 Temporal Activity의 실행 ID·재시도 횟수 |
-| `publications.json`, `simulation.json` | 자료 공개·Event와 실제 관찰한 가상 병원 기준 사건 |
-| `comparison.json` | `--expected`를 지정한 실행의 사후 비교 |
-| `temporal_history.json`, `temporal_execution.json`, `replay.json` | Temporal 실행 History와 Replay 결과 |
-| `notices.sqlite` | 요청 ID별 Mock 알림·표시·취소 receipt와 최종 Mock 표시 상태 |
+| 콘솔 없는 Episode 생성 | `chain.client.start_episode(client, configuration, initial, engine_run_id=...)` |
+| 병원 자료 공개·발견 | `hospital.py`는 공개만 수행. `backend.py`의 `fetch_source`로 발견하고 엔진의 기존 Event Ingress로 반영 |
+| 수동 Event | `submit_event({source_id, event})`. 별도 수동 입력도 동일한 검증·정확 버전 조회 경로 사용 |
+| Agent·출처·알림 구현 | `providers.py`의 `provider_factory(binding, services)`와 `../config/minimum/installed.json`의 승인 entrypoint/bytes |
+| 원천 API 조회 | `chain/backend_source.py`의 공통 Provider와 `fetch_source(request)`·`resolve_exact(event)` client 계약. 데모 client는 `backend.py` |
+| HITL 표시/응답 | `console.py`의 native Request/개정 binding. `progress`로 개정 감시, `hitl_view(request_id, revision)`로 폼·원문 조회, receipt로 수락 확인 |
+| 작업 계획 | `../config/minimum/clinical.yaml`의 사실/마일스톤/State 투영·작업/결정/타이머. Site는 출처·대상, Safety는 승인, Deployment는 구현·기술 제한 |
 
-Temporal 실행은 종료 시 History를 저장하고 Replay한다. 저장한 History를 별도로 확인하려면:
+백엔드의 Signal·Query 계약은 콘솔 키 입력과 분리되어 있다. HTTP/Push·사용자 인증·실제 병원 API·운영 DB는 제공하지 않는다.
+화면의 반복 조회는 원문/Agent 본문을 제외한 `progress`를 사용하고 동시 요청을 100ms 안에서 공유한다.
+질문/개정이 바뀔 때 폼용 상세를 한 번 받고 `docs/json`은 지정 개정의 상세를 조회한다.
+이 공유는 Agent/HITL 실행 준비의 원천 재확인을 생략하지 않는다.
+직전 확인 실패는 현재 자료와 `UNCONFIRMED`로 진행하며 필수 Agent 성공까지 대신 만들지 않는다.
+전체 진단 `snapshot`과 종료 결과는 유지하며 원문/결과 일부는 History에도 남는다.
+제품 통합 시 장기 History·자료 보존 범위를 별도로 설계해야 한다.
+조회 실패는 구간·오류 코드로 구분하고 최초 실행 오류와 Snapshot/사후 비교의 보조 진단을 별도로 남긴다.
+진행 조회의 알려진 일시 오류는 최대3회, 회당5초·간격0.1초로 재시도한다.
+이전 화면을 최신 자료로 대신 반환하지 않으며, 소진·영구 오류·Workflow 실패는 명시적으로 종료한다.
+정상 완료 결과가 조회보다 먼저 도착하면 그 결과로 화면을 마무리한다.
+Snapshot 조회 실패와 별개로 History·실행 상태·Replay를 수집하고 최초 오류를 보존한다.
+내부 실행권 반환 Activity는 Temporal History에 기록되며 `commands.jsonl`의 임상/원천 작업과 구분한다.
 
-```bash
-.venv/bin/python -m demo.support.replay_history output/확인할실행폴더 \
-  --report output/확인할실행폴더/replay-again.json
-```
-
-새 보고서 경로를 지정하며 기존 파일을 덮어쓰지 않는다.
-콘솔 종료나 실행 시간 제한은 자동 의료진 응답을 만들지 않는다.
-임시 Service는 데모 종료 시 함께 내려가고, 기존 Service를 사용한 경우 그 Service는 계속 실행된다.
-
-## 6. 코드와 실제 통합의 경계
-
-| 위치 | 역할 |
-|---|---|
-| [run.py](run.py) | 데모 구성·수명·실행 결과 저장 |
-| [console.py](console.py) | 고정된 HITL 근거 확인과 데모 입력 |
-| [presentation.py](presentation.py) | 읽기 쉬운 표시와 진행 로그 |
-| [local_runtime.py](local_runtime.py), [temporal_runtime.py](temporal_runtime.py), [timers.py](timers.py) | Local/Temporal 연결과 타이머 관측 |
-| [simulator/](simulator/) | 선행 사건과 상대시간을 따르는 가상 병원 |
-| [support/](support/) | 가상 시계 Driver, 기록 응답, 사후 비교, Replay |
-| [scenarios/](scenarios/) | 데모 시계·기록 응답·기대 결과 |
-| [합성 Episode](../episodes/stroke_reference_001_v03/) | 초기 입력, 원천자료·시뮬레이션 일정과 Agent fixture |
-| [chain_demo/](../chain_demo/) | 통합 팀이 사용하는 공통 엔진·Worker·Workflow·Activity·계약 |
-
-실제 통합은 `chain_demo.worker`와 백엔드의 Signal/Query 계약을 사용한다.
-프론트·백엔드에서 이 데모 콘솔을 호출할 필요는 없다.
-HITL 원문 화면도 같은 `snapshot` Query의 `open_hitl`·`hitl_history`에 있는 `source_documents`를 사용한다.
-원문 계약과 판단 근거의 구분은 [루트 README 5.3절](../README.md#53-hitl-화면과-응답)에 있다.
-`ready`는 공통 재요청 기능의 데모 조작이며, 실제 화면에서는 재요청 버튼을 백엔드 handler에 연결한다.
-handler는 인증된 actor와 이전 보류 Request ID를 담아 `request_hitl_resume` Signal을 보내고,
-`snapshot`의 `hitl_waits`·`hitl_resume_commands`로 수락·준비·오류·새 요청을 조회한다.
-Signal 접수와 엔진 처리 완료를 구분하고, 새 HITL의 실제 결정은 기존 `submit_decision`으로 보낸다.
-입력 계약과 백엔드 호출 예시는 [루트 README 5.3절](../README.md#53-hitl-화면과-응답)에 있다.
-`q`는 데모 입력 종료이며 실제 화면을 닫는 행위도 Workflow 취소와 연결하지 않는다.
-구현할 Agent/API와 연결 위치는 [루트 README](../README.md)에 있다.
+고정 fixture의 생성 근거는 `provenance.json`, 승인 모듈의 파일 hash는 `config/minimum/installed*.json`에 있다.
+런타임에서는 fixture를 새로 생성하거나 미공개 원천자료를 읽지 않는다.

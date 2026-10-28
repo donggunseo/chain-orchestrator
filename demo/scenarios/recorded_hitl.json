@@ -1,106 +1,31 @@
 {
+  "recorded_schema": "chain-recorded/v0.3",
   "test_mode_only": true,
-  "events": [
+  "responses": [
     {
-      "event_id": "EVT-HYG-261006-004903",
-      "event_type": "HITL_DECISION",
-      "schema_version": "CHAIN_EVENT_v0.1",
-      "site_id": "HYUMC_GURI",
-      "site_node_id": "SN-HYG-01",
-      "source_system": "CHAIN_CONSOLE",
-      "patient_id": "PT-HYG-edd5a27af1",
-      "encounter_id": "E261006058",
-      "episode_id": "EP-HYG-261006-058",
-      "sequence_no": 5,
-      "source_event_time": "2026-10-06T15:23:30+09:00",
-      "emitted_time": "2026-10-06T15:23:30+09:00",
-      "source_ref": {
-        "system": "CHAIN_CONSOLE",
-        "record_type": "HITL_DECISION",
-        "record_id": "HITL-HYG-261006-058-1",
-        "version": 1
+      "checkpoint": "HITL_1_PROCEED_TO_CT",
+      "decision": "PROCEED_TO_CT",
+      "actor": {
+        "role": "EM_PHYSICIAN",
+        "staff_id": "STF-20431"
       },
-      "correlation": {
-        "trace_id": "TRC-HYG-261006-058-05"
-      },
-      "payload": {
-        "hitl_request_id": "HITL-HYG-261006-058-1",
-        "checkpoint": "HITL_1_PROCEED_TO_CT",
-        "decision": "PROCEED_TO_CT",
-        "actor": {
-          "staff_id": "STF-20431",
-          "role": "EM_PHYSICIAN",
-          "role_ko": "응급의학과 전문의"
-        },
-        "console_session_id": "CSN-7f21c9",
-        "evidence_viewed": [
-          "screening:evidence",
-          "summary:anticoagulant_use",
-          "summary:lkw_records",
-          "context:vital_signs"
-        ],
-        "comment": "Rt. hemiparesis + global aphasia, LKW 13:35 보호자 확인. 응급 Stroke CT 진행. CT 오더는 OCS에서 별도 입력.",
-        "decision_time": "2026-10-06T15:23:30+09:00"
-      },
-      "integrity": {
-        "payload_hash": "sha256:8ac5d71b6e872088be7a5abc5eaac4f93b7f6d33aa8755c4999f1cbceff4571f",
-        "signature": null
-      }
+      "confirmed_items": [],
+      "comment": "Rt. hemiparesis + global aphasia, LKW 13:35 보호자 확인. 응급 Stroke CT 진행. CT 오더는 OCS에서 별도 입력."
     },
     {
-      "event_id": "EVT-HYG-261006-005071",
-      "event_type": "HITL_DECISION",
-      "schema_version": "CHAIN_EVENT_v0.1",
-      "site_id": "HYUMC_GURI",
-      "site_node_id": "SN-HYG-01",
-      "source_system": "CHAIN_CONSOLE",
-      "patient_id": "PT-HYG-edd5a27af1",
-      "encounter_id": "E261006058",
-      "episode_id": "EP-HYG-261006-058",
-      "sequence_no": 12,
-      "source_event_time": "2026-10-06T15:41:30+09:00",
-      "emitted_time": "2026-10-06T15:41:30+09:00",
-      "source_ref": {
-        "system": "CHAIN_CONSOLE",
-        "record_type": "HITL_DECISION",
-        "record_id": "HITL-HYG-261006-058-2",
-        "version": 1
+      "checkpoint": "HITL_2_THROMBOLYSIS",
+      "decision": "THROMBOLYSIS_YES",
+      "actor": {
+        "role": "NEUROLOGIST",
+        "staff_id": "STF-31178"
       },
-      "correlation": {
-        "trace_id": "TRC-HYG-261006-058-12"
-      },
-      "payload": {
-        "hitl_request_id": "HITL-HYG-261006-058-2",
-        "checkpoint": "HITL_2_THROMBOLYSIS",
-        "decision": "THROMBOLYSIS_YES",
-        "selected_regimen": "ALTEPLASE_STANDARD_0.9",
-        "actor": {
-          "staff_id": "STF-31178",
-          "role": "NEUROLOGIST",
-          "role_ko": "신경과 당직의"
-        },
-        "console_session_id": "CSN-9a04e2",
-        "confirmed_items": [
-          "NCCT_NO_HEMORRHAGE_PHYSICIAN_READ",
-          "LKW_RECONFIRMED_WITH_FAMILY",
-          "BP_RECHECK_BELOW_185_110",
-          "NO_ANTICOAGULANT_RECONFIRMED"
-        ],
-        "evidence_viewed": [
-          "dsa:evidence_package",
-          "dsa:eligibility_checks",
-          "dsa:dose_suggestion",
-          "imaging:pacs_viewer",
-          "lab:PLATELET_COUNT",
-          "lab:INR"
-        ],
-        "comment": "NCCT 출혈 없음, early ischemic change 명확하지 않음(hyperdense MCA sign 의심). 보호자에게 LKW 13:35 재확인. BP 재측정 <185/110 확인. IV alteplase 시행 예정, 처방·투약은 EMR 기존 절차로 진행.",
-        "decision_time": "2026-10-06T15:41:30+09:00"
-      },
-      "integrity": {
-        "payload_hash": "sha256:43cf277b59dc57b7039643ddc252e9e963d35f8a162438b496f4b5e89954a28e",
-        "signature": null
-      }
+      "confirmed_items": [
+        "NCCT_NO_HEMORRHAGE_PHYSICIAN_READ",
+        "LKW_RECONFIRMED_WITH_FAMILY",
+        "BP_RECHECK_BELOW_185_110",
+        "NO_ANTICOAGULANT_RECONFIRMED"
+      ],
+      "comment": "NCCT 출혈 없음, early ischemic change 명확하지 않음(hyperdense MCA sign 의심). 보호자에게 LKW 13:35 재확인. BP 재측정 <185/110 확인. IV alteplase 시행 예정, 처방·투약은 EMR 기존 절차로 진행."
     }
   ]
 }

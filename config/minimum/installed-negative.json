@@ -1,0 +1,447 @@
+{
+  "modules": {
+    "fact-demo:agent:clinical-summary-agent": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "invoke_agent"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "agent",
+      "metadata": {
+        "agent_id": "clinical-summary-agent",
+        "backend": {
+          "kind": "structured"
+        },
+        "contract": {
+          "actions": [
+            "READ_DATA_API",
+            "RETURN_RESULT"
+          ],
+          "data_scopes": [
+            "context:read"
+          ],
+          "modes": {
+            "context": {
+              "output_fields": [
+                "structured_context",
+                "missing_information",
+                "cache"
+              ]
+            }
+          },
+          "request_contract": "chain-fact-agent-request/v1",
+          "requires_summary": false,
+          "result_contract": "chain-fact-agent-result/v1",
+          "version": "1.0.0-fact-demo8"
+        }
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:agent:stroke-screening-agent": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "invoke_agent"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/assets/agent-fixtures-negative.json": "sha256:3b32ce1aaa029b617a4069cd6286035cbfba5a8d905c1ab6c3af1cbf1a6f2a1b",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "agent",
+      "metadata": {
+        "agent_id": "stroke-screening-agent",
+        "backend": {
+          "config_ref": "demo/assets/agent-fixtures-negative.json",
+          "kind": "fixture"
+        },
+        "contract": {
+          "actions": [
+            "READ_DATA_API",
+            "RETURN_RESULT"
+          ],
+          "data_scopes": [
+            "context:read"
+          ],
+          "modes": {
+            "screening": {
+              "output_fields": [
+                "screening_result",
+                "mock_only",
+                "basis"
+              ]
+            }
+          },
+          "request_contract": "chain-fact-agent-request/v1",
+          "requires_summary": true,
+          "result_contract": "chain-fact-agent-result/v1",
+          "version": "1.0.0-fact-demo8"
+        }
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:agent:tpa-decision-support-agent": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "invoke_agent"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/assets/agent-fixtures-negative.json": "sha256:3b32ce1aaa029b617a4069cd6286035cbfba5a8d905c1ab6c3af1cbf1a6f2a1b",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "agent",
+      "metadata": {
+        "agent_id": "tpa-decision-support-agent",
+        "backend": {
+          "config_ref": "demo/assets/agent-fixtures-negative.json",
+          "kind": "fixture"
+        },
+        "contract": {
+          "actions": [
+            "READ_DATA_API",
+            "RETURN_RESULT"
+          ],
+          "data_scopes": [
+            "context:read"
+          ],
+          "modes": {
+            "final": {
+              "output_fields": [
+                "mode",
+                "evidence_package",
+                "assessment",
+                "mock_only"
+              ]
+            },
+            "interim": {
+              "output_fields": [
+                "mode",
+                "evidence_package",
+                "assessment",
+                "mock_only"
+              ]
+            }
+          },
+          "request_contract": "chain-fact-agent-request/v1",
+          "requires_summary": true,
+          "result_contract": "chain-fact-agent-result/v1",
+          "version": "1.0.0-fact-demo8"
+        }
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:effects": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "apply_effect"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "effect",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "operations": [
+          "SET_FLAG",
+          "CLEAR_FLAG",
+          "SET_DASHBOARD",
+          "CLEAR_DASHBOARD"
+        ],
+        "resources": [
+          "CHAIN_DASHBOARD",
+          "CHAIN_S1"
+        ],
+        "targets": [
+          "CHAIN_CONSOLE",
+          "EHR_PATIENT_LIST"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:notifier": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "notify"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "notifier",
+      "metadata": {
+        "channels": [
+          "CONSOLE"
+        ],
+        "contract_version": "chain-fact-execution/v1",
+        "templates": [
+          "CT_ROOM_PREALERT_L1",
+          "NURSE_S1_PREP",
+          "NEURO_ONCALL_S1",
+          "CT_ROOM_PREALERT_CANCELLED",
+          "NURSE_S1_PREP_CANCELLED",
+          "NEURO_ONCALL_S1_CANCELLED",
+          "HITL1_OVERDUE",
+          "CT_ROOM_CONFIRMED_L2",
+          "NEURO_ONCALL_S2",
+          "CT_OVERDUE",
+          "NEURO_ONCALL_CT_DONE",
+          "HITL2_OVERDUE",
+          "NURSE_S3_THROMBOLYSIS_PLANNED",
+          "EM_S3_THROMBOLYSIS_PLANNED",
+          "NEURO_S3_CONFIRM"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:source:emr": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "resolve_exact",
+        "query_latest",
+        "reconcile_changes"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "source",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "data_scopes": [
+          "source:read"
+        ],
+        "fields": [
+          "initial_note",
+          "lkw",
+          "anticoagulant",
+          "weight_kg",
+          "nihss",
+          "sbp",
+          "dbp",
+          "glucose"
+        ],
+        "systems": [
+          "ER_EMR"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:source:lis": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "resolve_exact",
+        "query_latest",
+        "reconcile_changes"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "source",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "data_scopes": [
+          "source:read"
+        ],
+        "fields": [
+          "platelet_count",
+          "inr"
+        ],
+        "systems": [
+          "LIS"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:source:nursing": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "resolve_exact",
+        "query_latest",
+        "reconcile_changes"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "source",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "data_scopes": [
+          "source:read"
+        ],
+        "fields": [
+          "lkw",
+          "anticoagulant",
+          "weight_kg",
+          "nihss",
+          "sbp",
+          "dbp",
+          "glucose"
+        ],
+        "systems": [
+          "NURSING_EMR"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:source:ocs": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "resolve_exact",
+        "query_latest",
+        "reconcile_changes"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "source",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "data_scopes": [
+          "source:read"
+        ],
+        "fields": [
+          "ct_order_id"
+        ],
+        "systems": [
+          "OCS"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    },
+    "fact-demo:source:ris": {
+      "approval_ref": "packaged-synthetic-demo-stage8-only",
+      "capabilities": [
+        "resolve_exact",
+        "query_latest",
+        "reconcile_changes"
+      ],
+      "entrypoint": "demo.providers:provider_factory",
+      "files": {
+        "demo/__init__.py": "sha256:51e6f06f6833102a4e620f0c3c8338e1341d180b6216f7a217ef6c372f639852",
+        "demo/backend.py": "sha256:663a585decde6d7d94d9b9aab5827a0a72399ce358f914a99260feb6ed05e05e",
+        "demo/mocks/__init__.py": "sha256:1df4d16388d2ffb603a6f37e1e1dbfa94cb819e9f1314e10331f5ac40880cd9c",
+        "demo/mocks/adapters/__init__.py": "sha256:0e5fe51213aea62ff669c95be4828ab003bcd9290859fe515b2d3090987705ac",
+        "demo/mocks/adapters/ingress.py": "sha256:98faa4d19d2f474f0259e78c8ce7e28d19cd4ada825922d44939b4840b80c8a8",
+        "demo/mocks/adapters/store.py": "sha256:28f4ad52627b78007764dfc3e4cd57555ac4fc39bbdca1d1d6619bfc1dc216e5",
+        "demo/mocks/effects.py": "sha256:004cf7a89a25bb1b01755018d326e040ec77f74c7a4c468068fe7c99c7c62496",
+        "demo/mocks/notifier.py": "sha256:b2d117c57ece526c68ae3ac5db94549c03bce8589950950a10cd0f2932c820d7",
+        "demo/providers.py": "sha256:3708cdff549b6167c808ab40ee10e1c0945d1427f65830d26620e0cf7caab349",
+        "demo/source_store.py": "sha256:f79d249df5b622bd19a37ac7c9c0df021661c4301c4e2c09dbea7bcfd60de6c3"
+      },
+      "kind": "source",
+      "metadata": {
+        "contract_version": "chain-fact-execution/v1",
+        "data_scopes": [
+          "source:read"
+        ],
+        "fields": [
+          "ncct_completed",
+          "ncct_order_id"
+        ],
+        "systems": [
+          "RIS_PACS"
+        ]
+      },
+      "status": "APPROVED",
+      "version": "1.0.0-fact-demo8"
+    }
+  },
+  "schema": "chain-installed/v1"
+}
