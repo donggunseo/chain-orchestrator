@@ -6,7 +6,28 @@
 실제 병원/API에 접속하거나 처방·투약하지 않는다. 알림과 EHR 표시는 `MOCK_RECORDED`다.
 
 `python -m demo`는 현재 엔진의 합성 데모를 시작한다.
-최소 범위는 S0~S3와 경로 종료 분기이며 입원·전원·EVT 전체를 시연하는 자료는 포함하지 않는다.
+최소 범위는 응급실 등록부터 재관류 치료 시행 결정까지와 경로 종료 분기다.
+입원·전원·EVT 전체를 시연하는 자료는 포함하지 않는다.
+
+## State 식별자
+
+콘솔과 조회 결과의 `state`는 Clinical의 `states`에 선언한 실행 ID다.
+표시 이름은 각 State의 `State.name`에서 가져온다.
+
+| 실행 ID | 최소 데모에서의 의미 |
+|---|---|
+| `ST-ED-010` | 응급실 등록·선별 대기 |
+| `ST-ED-020` | 뇌졸중 의심 |
+| `ST-IMG-010` | 영상검사 진행 결정 |
+| `ST-IMG-020` | 해당 오더의 NCCT 완료 확인 |
+| `ST-TX-010` | IVT 시행 결정 |
+| `ST-EXIT-010` | 선별 음성 종료 |
+| `ST-EXIT-020` | 뇌졸중 경로 아님 종료 |
+| `S3N` | IVT 미시행 — 최소 데모 전용 임시 종료 |
+
+`S3N`은 확장 임상 명세의 State가 아니다. 현재 NO 분기를 보존하는 용도로 사용하며,
+해당 임상 분기가 구체화되면 변경한다. 이 데모의 실행 종료는 치료 완료나 환자 내원 종료를 뜻하지 않는다.
+State ID를 변경한 구성은 새 Episode에 적용한다. 이미 시작한 실행은 원래 구성·Queue·ID를 유지한다.
 
 ## 준비와 실행
 
@@ -142,13 +163,13 @@ State/결정이 실제 수락된 것을 관측한 뒤 가상 시계의 현재 �
 1. 초기에는 식별 정보·나이·성별·병상·도착시각만 있다. 간호/초진 자료가 공개되면 Screening을 실행한다.
 2. HITL #1이 열려도 독립적인 CBC/COAG 결과는 계속 유입된다.
    `DEMO_DECISION_READY | HITL_1_PROCEED_TO_CT`가 보이면 기본 시나리오의 응답 시점에 도달한 것이다.
-3. PROCEED_TO_CT 결정이 엔진에 수락되고 S2에 들어온 뒤 가상 의료진이 OCS 오더를 입력한다.
+3. PROCEED_TO_CT 결정이 엔진에 수락되고 `ST-IMG-010`에 들어온 뒤 가상 의료진이 OCS 오더를 입력한다.
    NCCT는 그 오더를 기준으로 도착한다. CHAIN의 자동 오더가 아니다.
-4. 해당 NCCT와 오더가 일치하면 S2_1을 표시하고 tPA final 가상 결과·근거 준비 후 HITL #2를 연다.
-5. YES는 S3, NO는 S3N으로 끝난다. S3는 이 최소 시연의 시행계획 확인 종료이며 실제 치료 완료가 아니다.
+4. 해당 NCCT와 오더가 일치하면 `ST-IMG-020`을 표시하고 tPA final 가상 결과·근거 준비 후 HITL #2를 연다.
+5. YES는 `ST-TX-010`, NO는 `S3N`으로 끝난다. YES의 종료 지점은 시행 결정이며 실제 치료 완료가 아니다.
 
 선택 코드/번호, 모의 역할·직원 ID·사유와 요구되는 확인사항을 입력한다.
-HITL #1의 NOT_STROKE_PATHWAY는 S1X, Screening NEGATIVE는 S0X로 끝난다.
+HITL #1의 NOT_STROKE_PATHWAY는 `ST-EXIT-020`, Screening NEGATIVE는 `ST-EXIT-010`으로 끝난다.
 DEFER/HOLD는 같은 State에 머무르며 타이머로 다시 질문한다.
 보류 화면의 `ready`는 기다리는 도중 먼저 재요청하는 기능이다. 새 결정과 구분해 전송한다.
 
@@ -185,7 +206,7 @@ Summary는 확보된 구조화 자료를 요청 범위로 조합하는 Mock이�
 
 Local은 `--backend local`로 바꾸고 `--start-local`을 뺀다.
 기존 Service는 `--start-local` 대신 `--address localhost:7233`을 사용하며 CLI 경로가 필요 없다.
-완료 시 `RUN_OUTCOME | COMPLETED | state=S3`와 종료코드 0을 남긴다.
+완료 시 `RUN_OUTCOME | COMPLETED | state=ST-TX-010`과 종료코드 0을 남긴다.
 기대 결과는 실행이 끝난 뒤에만 비교하고 Workflow에 전달하지 않는다.
 사용 가능한 합성 응답/기대 자료:
 
@@ -197,7 +218,7 @@ Local은 `--backend local`로 바꾸고 `--start-local`을 뺀다.
 | DEFER→PROCEED→HOLD→YES | `recorded_defer_hold.json` | `expected.json`; 짧은 재질문을 위해 `--test-timer-scale 0.01` |
 
 파일은 모두 `demo/scenarios/` 아래다. NEGATIVE는 별도 고정 fixture 프로필
-`--fixture-profile negative`로 실행한다. 이 경우 콘솔 요청 없이 S0X로 종료하며
+`--fixture-profile negative`로 실행한다. 이 경우 콘솔 요청 없이 `ST-EXIT-010`으로 종료하며
 `--expected demo/scenarios/expected_s0x.json`으로 확인할 수 있다.
 fixture에 없는 입력은 `FIXTURE_NOT_FOUND`로 명시 실패한다. 실행 중 정답을 생성하거나 PASS로 대체하지 않는다.
 

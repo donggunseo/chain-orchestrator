@@ -1,9 +1,9 @@
 {
   "expected_schema": "chain-fact-demo-expected/v1",
   "state_path": [
-    "S0",
-    "S1",
-    "S1X"
+    "ST-ED-010",
+    "ST-ED-020",
+    "ST-EXIT-020"
   ],
-  "terminal_state": "S1X"
+  "terminal_state": "ST-EXIT-020"
 }

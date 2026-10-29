@@ -108,20 +108,20 @@ synthetic_anchors:
 - id: SIMULATED_NEUROLOGIST_ARRIVED
   anchor: S1_ENTERED
   offset_s: 415
-  timing_origin: VIRTUAL exact anchor; note says arrival 15:27, reference S1 15:20:05
+  timing_origin: VIRTUAL exact anchor; note says arrival 15:27, reference ST-ED-020 15:20:05
 publication_delay:
   offset_s: 0
   timing_origin: VIRTUAL; source does not specify transport delay
 notes:
 - Only Simulator may read this file; it must await actual anchors.
-- CT order is entered by simulated clinician after accepted HITL1 and S2; CHAIN creates
+- CT order is entered by simulated clinician after accepted HITL1 and ST-IMG-010; CHAIN creates
   no order.
 - When anchors move, rebind source times/payloads; stored reference timestamps are
   not runnable shifted records.
 observations:
   states:
-    S1: S1_ENTERED
-    S2: S2_ENTERED
+    ST-ED-020: S1_ENTERED
+    ST-IMG-010: S2_ENTERED
   decisions:
   - checkpoint: HITL_1_PROCEED_TO_CT
     decision: PROCEED_TO_CT

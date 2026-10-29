@@ -205,10 +205,10 @@ milestones:
     - legacy-flow
     - legacy-safety
 states:
-  S0:
+  ST-ED-010:
     State:
       name: ED_REGISTERED
-      clinical_ids: []
+      clinical_ids: [ST-ED-010]
     Clinical Goal and Scope:
       goal: 급성 뇌졸중 평가 필요성을 Screening으로 확인한다. 진단 확정을 뜻하지 않는다.
       start: 알려진 초기 입력으로 Episode를 시작한다.
@@ -252,17 +252,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S1:
+  ST-ED-020:
     State:
       name: ACUTE_STROKE_SUSPECTED
-      clinical_ids: []
+      clinical_ids: [ST-ED-020]
     Clinical Goal and Scope:
       goal: 수락된 Screening과 고정된 근거를 표시해 의료진의 CT 경로 결정을 돕는다.
       start: Screening POSITIVE로 진입한다.
       end: 'HITL #1의 CT 진행/경로 종료 결정 또는 보류.'
     Entry Trigger:
       projection_rule_refs:
-      - to_S1
+      - to_ST-ED-020
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs:
@@ -307,17 +307,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S2:
+  ST-IMG-010:
     State:
       name: STROKE_CT_CONFIRMED
-      clinical_ids: []
+      clinical_ids: [ST-IMG-010]
     Clinical Goal and Scope:
       goal: CT 촬영을 기다리며 새 근거에 따라 tPA interim 의사결정지원을 반복한다.
       start: '의료진이 HITL #1에서 CT 진행을 결정한다.'
-      end: 해당 오더의 뇌 NCCT 완료 Event로 S2_1에 진입한다.
+      end: 해당 오더의 뇌 NCCT 완료 Event로 ST-IMG-020에 진입한다.
     Entry Trigger:
       projection_rule_refs:
-      - to_S2
+      - to_ST-IMG-010
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs:
@@ -388,17 +388,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S2_1:
+  ST-IMG-020:
     State:
       name: CT_COMPLETED
-      clinical_ids: []
+      clinical_ids: [ST-IMG-020]
     Clinical Goal and Scope:
       goal: 수락된 tPA final 결과와 고정된 근거로 의료진의 IV thrombolysis 계획 결정을 요청한다.
       start: 해당 CT 오더의 뇌 NCCT 촬영 완료.
       end: 'HITL #2에서 시행 계획/비시행을 결정하거나 보류한다.'
     Entry Trigger:
       projection_rule_refs:
-      - to_S2_1
+      - to_ST-IMG-020
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs:
@@ -472,17 +472,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S3:
+  ST-TX-010:
     State:
       name: THROMBOLYSIS_PLANNED
-      clinical_ids: []
+      clinical_ids: [ST-TX-010]
     Clinical Goal and Scope:
       goal: 의료진의 IV thrombolysis 시행 계획을 Mock 알림으로 기록하고 경로를 종료한다.
       start: 'HITL #2에서 THROMBOLYSIS_YES를 수락한다.'
       end: 진행 중 작업을 처리한 뒤 Workflow를 종료한다.
     Entry Trigger:
       projection_rule_refs:
-      - to_S3
+      - to_ST-TX-010
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs: []
@@ -512,6 +512,7 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
+  # 최소 데모 전용 IVT 비시행 종료 State. 확장 임상 분기 확정 시 대체한다.
   S3N:
     State:
       name: THROMBOLYSIS_NOT_PLANNED
@@ -549,17 +550,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S1X:
+  ST-EXIT-020:
     State:
       name: NOT_STROKE_PATHWAY
-      clinical_ids: []
+      clinical_ids: [ST-EXIT-020]
     Clinical Goal and Scope:
       goal: 의료진 판단으로 뇌졸중 경로를 종료하고 Mock 표시 해제 및 사전알림 취소 안내를 기록한다.
       start: 'HITL #1에서 NOT_STROKE_PATHWAY를 수락한다.'
       end: Mock 효과·취소 알림 기록과 감사 봉인 요청 후 경로 종료.
     Entry Trigger:
       projection_rule_refs:
-      - to_S1X
+      - to_ST-EXIT-020
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs: []
@@ -591,17 +592,17 @@ states:
       origin_refs:
       - legacy-flow
       - legacy-safety
-  S0X:
+  ST-EXIT-010:
     State:
       name: SCREEN_NEGATIVE_CLOSED
-      clinical_ids: []
+      clinical_ids: [ST-EXIT-010]
     Clinical Goal and Scope:
       goal: 선별 음성 결과를 감사 기록에 남기고 조용히 경로를 종료한다. 뇌졸중 배제를 뜻하지 않는다.
       start: Screening NEGATIVE를 수락한다.
       end: 감사 기록과 진행 중 작업 처리 후 Workflow 종료.
     Entry Trigger:
       projection_rule_refs:
-      - to_S0X
+      - to_ST-EXIT-010
       description: 공유 사실·안전 요건의 State 투영 결과
     Incoming Data / Evidence:
       context_refs: []
@@ -629,10 +630,10 @@ states:
       - legacy-flow
       - legacy-safety
 state_projection:
-  fallback: S0
+  fallback: ST-ED-010
   rules:
-    to_S0X:
-      state: S0X
+    to_ST-EXIT-010:
+      state: ST-EXIT-010
       priority: 10
       when: &id006
         eq:
@@ -641,8 +642,8 @@ state_projection:
       requirement_refs: []
       origin_refs:
       - legacy-flow
-    to_S1:
-      state: S1
+    to_ST-ED-020:
+      state: ST-ED-020
       priority: 20
       when: &id003
         eq:
@@ -651,8 +652,8 @@ state_projection:
       requirement_refs: []
       origin_refs:
       - legacy-flow
-    to_S1X:
-      state: S1X
+    to_ST-EXIT-020:
+      state: ST-EXIT-020
       priority: 30
       when:
         eq:
@@ -661,8 +662,8 @@ state_projection:
       requirement_refs: []
       origin_refs:
       - legacy-flow
-    to_S2:
-      state: S2
+    to_ST-IMG-010:
+      state: ST-IMG-010
       priority: 40
       when: &id001
         eq:
@@ -672,8 +673,8 @@ state_projection:
       - CT_PATH_APPROVED
       origin_refs:
       - legacy-flow
-    to_S2_1:
-      state: S2_1
+    to_ST-IMG-020:
+      state: ST-IMG-020
       priority: 50
       when:
         eq:
@@ -694,8 +695,8 @@ state_projection:
       requirement_refs: []
       origin_refs:
       - legacy-flow
-    to_S3:
-      state: S3
+    to_ST-TX-010:
+      state: ST-TX-010
       priority: 70
       when:
         eq:
@@ -1210,7 +1211,7 @@ work_rules:
     - legacy-flow
 decisions:
   H1:
-    question: 급성 뇌졸중 의심(S1). 응급 Stroke CT를 진행하시겠습니까?
+    question: 급성 뇌졸중 의심(ST-ED-020). 응급 Stroke CT를 진행하시겠습니까?
     options:
       PROCEED_TO_CT:
         effect: commit
@@ -1241,7 +1242,7 @@ timers:
   H1_OVERDUE:
     owner:
       kind: state
-      id: S1
+      id: ST-ED-020
     anchor: state_entered
     after:
       value: 20
@@ -1265,7 +1266,7 @@ timers:
   CT_OVERDUE:
     owner:
       kind: state
-      id: S2
+      id: ST-IMG-010
     anchor: state_entered
     after:
       value: 30
@@ -1282,7 +1283,7 @@ timers:
   H2_OVERDUE:
     owner:
       kind: state
-      id: S2_1
+      id: ST-IMG-020
     anchor: state_entered
     after:
       value: 10

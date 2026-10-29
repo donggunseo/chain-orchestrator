@@ -1,10 +1,10 @@
 {
   "expected_schema": "chain-fact-demo-expected/v1",
   "state_path": [
-    "S0",
-    "S1",
-    "S2",
-    "S2_1",
+    "ST-ED-010",
+    "ST-ED-020",
+    "ST-IMG-010",
+    "ST-IMG-020",
     "S3N"
   ],
   "terminal_state": "S3N"

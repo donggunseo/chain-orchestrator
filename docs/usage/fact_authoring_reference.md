@@ -45,6 +45,10 @@ status는 `existing-approved`, `wg1-review`, `synthetic-test` 중 하나다.
 `extension-review`는 Safety의 `purpose: review-only`와 함께 사용하는 검토 형식이다.
 Schema로 표현 가능하다는 것만으로 임상 프로필의 실행 승인이 되지는 않는다.
 
+State 실행 ID는 `states`의 key다. `ST-IMG-020` 같은 하이픈 ID를 사용할 수 있으며,
+`State.name`의 표시 이름과 구분한다. 투영 대상·fallback·Timer 소유자·State 진입 참조는 같은 실행 ID를 사용한다.
+최소 프로필의 `S3N`은 IVT 미시행 분기를 위한 임시 데모 ID이며 확장 임상 State는 아니다.
+
 ### facts·contexts·milestones
 
 | 항목 | 형식 / 의미 |
@@ -74,7 +78,7 @@ Schema로 표현 가능하다는 것만으로 임상 프로필의 실행 승인�
 | `state_entries.<State ID>.generation` | 해당 State의 진입 세대 |
 
 `results` 뒤에는 논리 Agent 이름이 아니라 **tasks의 작업 ID**를 쓴다.
-현재 State를 읽는 `state.S1`, 임의 중첩 JSON 탐색, Python `eval`은 지원하지 않는다.
+현재 State를 읽는 `state.ST-ED-020`, 임의 중첩 JSON 탐색, Python `eval`은 지원하지 않는다.
 결과 필드는 해당 Agent mode의 `output_fields`에 선언돼 있어야 한다.
 
 ### 연산 양식

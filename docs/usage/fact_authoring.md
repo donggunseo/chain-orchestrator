@@ -98,6 +98,10 @@ contexts:
 ## 4. 임상팀의 13개 State 명세를 채운다
 
 현재 양식은 아래 항목명을 그대로 사용한다. 다른 표기·필드를 덧붙이면 검증에서 거부할 수 있다.
+`states`의 key가 실행 ID이며 `ST-ED-010`처럼 임상 State ID를 사용한다.
+`State.name`은 표시 이름, `clinical_ids`는 관련 임상 ID 목록이다.
+`state_projection`의 대상·fallback, Timer의 State 소유자, `state_entries` 참조에는 표시 이름이 아니라 실행 ID를 쓴다.
+현재 최소 프로필의 `S3N`은 IVT 미시행 분기를 보존하기 위한 임시 ID이며 확장 임상 State와 구분한다.
 
 | 명세 항목 | 작성 내용 |
 |---|---|
@@ -141,8 +145,8 @@ when:
 현재 NCCT 표시 규칙은 다음과 같다.
 
 ```yaml
-to_S2_1:
-  state: S2_1
+to_ST-IMG-020:
+  state: ST-IMG-020
   priority: 50
   when:
     eq: [{ref: facts.ncct_completed}, {literal: true}]
@@ -150,7 +154,7 @@ to_S2_1:
   origin_refs: [legacy-flow]
 ```
 
-기존 S2 경로의 추가 NCCT 조건은 해당 촬영 완료와 오더 일치뿐이다.
+`ST-IMG-010`에서 `ST-IMG-020`을 표시하기 위한 추가 NCCT 조건은 해당 촬영 완료와 오더 일치뿐이다.
 혈소판/INR 완비·영상 직접 판독·Agent final·`review_ready`를 이 전이 조건에 더하지 않는다.
 final/Summary 결과는 다음 HITL 준비의 선행조건으로 별도로 다룬다.
 이 예시의 임상 조건을 바꾸려면 해당 임상·정책 검토를 거친다.
@@ -274,6 +278,7 @@ metadata를 함께 복사하지 않았다면 아래처럼 경로를 모두 지�
 ```
 
 필요한 변경을 검토·승인한 뒤 새 버전/Artifact로 배포한다. 기존 실행은 원래 Artifact를 유지한다.
+State ID 변경도 새 구성과 Queue에서 시작하는 Episode에 적용하며 기존 실행·History의 ID를 다시 쓰지 않는다.
 코어·모듈 파일을 덮어쓴 뒤 같은 Worker Queue로 계속 처리하는 방식은 지원하지 않는다.
 모듈 구현은 [연동 계약](fact_integration.md), 설치·배포·버전 보존은 [운영 안내](fact_operations.md)를 따른다.
 
@@ -291,7 +296,9 @@ metadata를 함께 복사하지 않았다면 아래처럼 경로를 모두 지�
 현재 합성 fixture는 정확한 입력에만 맞는다. Context 항목·값·버전을 바꾸면 컴파일은 통과해도
 실행 시 `FIXTURE_NOT_FOUND`가 날 수 있다. 이는 맞는 가상 출력이 없다는 시험 오류이며 성공값으로 대체하지 않는다.
 
-최소 프로필은 ACTIVE/COMPLETED와 기존 S0~S3/경로 종료 범위를 실행한다.
+최소 프로필은 ACTIVE/COMPLETED 수명과 응급실 등록부터 IVT 시행 결정까지의 흐름·경로 종료 분기를 실행한다.
+활성 State ID는 [데모의 State 목록](../../demo/README.md#state-식별자)을 따른다.
+IVT 미시행의 `S3N`은 최소 데모 전용 임시 State로 유지하고 확장 임상 분기가 구체화되면 대체한다.
 입원·전원·EVT 전체 여정, 종료 후 재개/재선별, 변경된 encounter 연결 등은 필요한 임상/연동 승인을 별도로 받는다.
 `origin_refs.status: wg1-review`를 바꾸는 것만으로 승인이 생기지 않는다.
 지원되지 않는 선언은 [오류 사전](fact_authoring_reference.md#오류를-읽는-방법)과 실제 진단을 확인한다.

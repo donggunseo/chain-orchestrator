@@ -171,6 +171,10 @@ Agent 입력은 기존 작업 준비/원천 재확인 계약으로 만든다.
 | 입력 접수와 Activity 상태 | `ingress_receipts`, `event_receipts`, `activity_progress` |
 | 최신 여부 확인·누락 보정 | `verifications`, `source_reconciliation` |
 
+`state`는 표시 이름이 아니라 실행에 고정한 Clinical의 `states` key다.
+현재 최소 프로필의 `ST-…` ID와 임시 NO 분기 `S3N`은 [State 식별자](../../demo/README.md#state-식별자)를 따른다.
+화면의 State 매핑은 이 ID를 사용하고, 이전 구성으로 시작한 실행의 ID를 최신 값으로 바꿔 해석하지 않는다.
+
 Query 자체에 사용자별 조회 권한 필터나 WebSocket/SSE 전송은 없다. 인증·인가·화면별 필드 선택·Push는 백엔드에서 연결한다.
 
 ## 4. 원천 시스템 Adapter를 구현한다

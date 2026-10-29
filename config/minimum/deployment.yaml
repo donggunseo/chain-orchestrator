@@ -1,4 +1,4 @@
-schema: chain-deployment/v1
+ schema: chain-deployment/v1
 deployment_id: minimum-mock-draft
 version: 1.0-demo-stage8
 site_id: HYUMC_GURI

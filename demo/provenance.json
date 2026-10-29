@@ -26,7 +26,7 @@
   "runtime_fallback": false,
   "runtime_reads_generator": false,
   "schema": "chain-fact-demo-provenance/v1",
-  "simulation_hash": "sha256:9f76472b99943ed34deab3fe8a1e89d08f42a682d86415a6cca104ae06d18ddd",
+  "simulation_hash": "sha256:a62549d7e07fb185002bf61c0c17aae056f573c70654668a1d15304428b432c8",
   "source_hashes": {
     "demo/episodes/stroke_reference_001/sources/emr/consult_note.json": "sha256:a69b8bbd7564cac4e6f6d89dfd23c65571db447e9be9286a5e234fc0b8aee6f5",
     "demo/episodes/stroke_reference_001/sources/emr/initial_note.json": "sha256:140a09acd9899169a3118ea458a4c1173f3e8148bf88762313133f1eefbd2839",
